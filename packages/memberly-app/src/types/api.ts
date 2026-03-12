@@ -112,6 +112,17 @@ export interface MemberAccessWithProduct {
   };
 }
 
+export interface ModuleWithLessons {
+  id: string;
+  product_id: string;
+  title: string;
+  description: string;
+  banner_url: string | null;
+  sort_order: number;
+  created_at: string;
+  lessons: import('@/types/database').Lesson[];
+}
+
 export interface MemberListParams {
   search?: string;
   product_id?: string;

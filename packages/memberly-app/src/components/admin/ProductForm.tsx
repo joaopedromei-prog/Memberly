@@ -11,9 +11,10 @@ import type { Product } from '@/types/database';
 
 interface ProductFormProps {
   product?: Product;
+  embedded?: boolean;
 }
 
-export function ProductForm({ product }: ProductFormProps) {
+export function ProductForm({ product, embedded }: ProductFormProps) {
   const router = useRouter();
   const addToast = useToastStore((s) => s.addToast);
   const isEditing = !!product;
@@ -25,6 +26,7 @@ export function ProductForm({ product }: ProductFormProps) {
     product?.banner_url ?? null
   );
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -101,26 +103,44 @@ export function ProductForm({ product }: ProductFormProps) {
       </div>
 
       <div>
-        <label htmlFor="slug" className="block text-sm font-medium text-gray-700">
-          Slug
-        </label>
-        <input
-          id="slug"
-          type="text"
-          value={slug}
-          onChange={(e) => {
-            setSlug(e.target.value);
-            setSlugManuallyEdited(true);
-          }}
-          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="protocolo-saude-total"
-        />
-        {errors.slug && (
-          <p className="mt-1 text-sm text-red-600">{errors.slug}</p>
+        <button
+          type="button"
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+        >
+          <svg
+            className={`h-4 w-4 transition-transform ${showAdvanced ? 'rotate-90' : ''}`}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+          </svg>
+          Configurações avançadas
+        </button>
+        {showAdvanced && (
+          <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <label htmlFor="slug" className="block text-sm font-medium text-gray-700">
+              Slug (URL)
+            </label>
+            <input
+              id="slug"
+              type="text"
+              value={slug}
+              onChange={(e) => {
+                setSlug(e.target.value);
+                setSlugManuallyEdited(true);
+              }}
+              className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="protocolo-saude-total"
+            />
+            {errors.slug && (
+              <p className="mt-1 text-sm text-red-600">{errors.slug}</p>
+            )}
+            <p className="mt-1 text-xs text-gray-400">
+              Gerado automaticamente do título. Edite apenas se necessário.
+            </p>
+          </div>
         )}
-        <p className="mt-1 text-xs text-gray-400">
-          Gerado automaticamente do título. Edite se necessário.
-        </p>
       </div>
 
       <div>

@@ -14,6 +14,7 @@ interface LessonFormProps {
   lesson?: Lesson;
   onSuccess: () => void;
   onCancel: () => void;
+  embedded?: boolean;
 }
 
 export function LessonForm({
@@ -21,6 +22,7 @@ export function LessonForm({
   lesson,
   onSuccess,
   onCancel,
+  embedded,
 }: LessonFormProps) {
   const addToast = useToastStore((s) => s.addToast);
   const isEditing = !!lesson;
@@ -104,12 +106,8 @@ export function LessonForm({
     }
   };
 
-  return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <h3 className="mb-4 text-lg font-semibold text-gray-900">
-        {isEditing ? 'Editar Aula' : 'Nova Aula'}
-      </h3>
-      <form onSubmit={handleSubmit} className="space-y-4">
+  const formContent = (
+    <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
             htmlFor="lesson-title"
@@ -250,7 +248,7 @@ export function LessonForm({
           )}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 pt-2">
           <Button type="submit" isLoading={isSubmitting}>
             {isEditing ? 'Salvar' : 'Criar Aula'}
           </Button>
@@ -264,6 +262,16 @@ export function LessonForm({
           </Button>
         </div>
       </form>
+  );
+
+  if (embedded) return formContent;
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <h3 className="mb-4 text-lg font-semibold text-gray-900">
+        {isEditing ? 'Editar Aula' : 'Nova Aula'}
+      </h3>
+      {formContent}
     </div>
   );
 }

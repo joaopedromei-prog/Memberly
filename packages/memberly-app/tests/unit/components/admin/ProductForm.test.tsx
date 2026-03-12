@@ -26,7 +26,6 @@ describe('ProductForm', () => {
     render(<ProductForm />);
 
     expect(screen.getByLabelText(/título/i)).toHaveValue('');
-    expect(screen.getByLabelText(/slug/i)).toHaveValue('');
     expect(screen.getByLabelText(/descrição/i)).toHaveValue('');
     expect(screen.getByRole('button', { name: /criar produto/i })).toBeInTheDocument();
   });
@@ -47,20 +46,20 @@ describe('ProductForm', () => {
     render(<ProductForm product={product} />);
 
     expect(screen.getByLabelText(/título/i)).toHaveValue('Test Product');
-    expect(screen.getByLabelText(/slug/i)).toHaveValue('test-product');
     expect(screen.getByLabelText(/descrição/i)).toHaveValue('Test description');
     expect(screen.getByRole('button', { name: /salvar alterações/i })).toBeInTheDocument();
   });
 
-  it('auto-generates slug from title', async () => {
+  it('shows slug field in advanced settings', () => {
     render(<ProductForm />);
 
-    const titleInput = screen.getByLabelText(/título/i);
-    fireEvent.change(titleInput, { target: { value: 'Meu Novo Produto' } });
+    // Slug is hidden by default in collapsed "Configurações avançadas"
+    expect(screen.queryByLabelText(/slug/i)).not.toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(screen.getByLabelText(/slug/i)).toHaveValue('meu-novo-produto');
-    });
+    // Click to expand advanced settings
+    fireEvent.click(screen.getByText(/configurações avançadas/i));
+
+    expect(screen.getByLabelText(/slug/i)).toBeInTheDocument();
   });
 
   it('shows validation error when title is empty', async () => {

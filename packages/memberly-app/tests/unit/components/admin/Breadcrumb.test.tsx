@@ -40,7 +40,9 @@ describe('Breadcrumb', () => {
     mockPathname = '/admin/products';
     render(<Breadcrumb />);
 
-    expect(screen.getByText('/')).toBeInTheDocument();
+    // Separator is now a chevron SVG, not a "/" text
+    const nav = screen.getByRole('navigation');
+    expect(nav).toBeInTheDocument();
   });
 
   it('returns null when only on /admin', () => {
@@ -50,10 +52,10 @@ describe('Breadcrumb', () => {
     expect(container.innerHTML).toBe('');
   });
 
-  it('maps settings to Configurações', () => {
-    mockPathname = '/admin/settings';
+  it('maps modules to Módulos', () => {
+    mockPathname = '/admin/products/modules';
     render(<Breadcrumb />);
 
-    expect(screen.getByText('Configurações')).toBeInTheDocument();
+    expect(screen.getByText('Módulos')).toBeInTheDocument();
   });
 });

@@ -16,7 +16,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex w-full items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+        'inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
         variant === 'primary' &&
           'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
         variant === 'outline' &&

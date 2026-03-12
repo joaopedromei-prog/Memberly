@@ -12,6 +12,7 @@ interface ModuleFormProps {
   module?: Module;
   onSuccess: () => void;
   onCancel: () => void;
+  embedded?: boolean;
 }
 
 export function ModuleForm({
@@ -19,6 +20,7 @@ export function ModuleForm({
   module,
   onSuccess,
   onCancel,
+  embedded,
 }: ModuleFormProps) {
   const addToast = useToastStore((s) => s.addToast);
   const isEditing = !!module;
@@ -67,77 +69,83 @@ export function ModuleForm({
     }
   };
 
+  const formContent = (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label
+          htmlFor="module-title"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Título *
+        </label>
+        <input
+          id="module-title"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          placeholder="Ex: Módulo 1 — Fundamentos"
+        />
+        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      </div>
+
+      <div>
+        <label
+          htmlFor="module-description"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Descrição
+        </label>
+        <textarea
+          id="module-description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={3}
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          placeholder="Descreva o módulo..."
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Banner
+        </label>
+        <div className="mt-1">
+          <BannerGenerator
+            currentBannerUrl={bannerUrl ?? undefined}
+            defaultPrompt={title ? `${title} - banner profissional, moderno, 16:9` : ''}
+            onBannerGenerated={(url) => setBannerUrl(url)}
+            onBannerRemoved={() => setBannerUrl(null)}
+            entityType="module"
+            entityName={title}
+          />
+        </div>
+      </div>
+
+      <div className="flex gap-3 pt-2">
+        <Button type="submit" isLoading={isSubmitting}>
+          {isEditing ? 'Salvar' : 'Criar Módulo'}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
+          Cancelar
+        </Button>
+      </div>
+    </form>
+  );
+
+  if (embedded) return formContent;
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
       <h3 className="mb-4 text-lg font-semibold text-gray-900">
         {isEditing ? 'Editar Módulo' : 'Novo Módulo'}
       </h3>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label
-            htmlFor="module-title"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Título *
-          </label>
-          <input
-            id="module-title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="Ex: Módulo 1 — Fundamentos"
-          />
-          {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-        </div>
-
-        <div>
-          <label
-            htmlFor="module-description"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Descrição
-          </label>
-          <textarea
-            id="module-description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="Descreva o módulo..."
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Banner
-          </label>
-          <div className="mt-1">
-            <BannerGenerator
-              currentBannerUrl={bannerUrl ?? undefined}
-              defaultPrompt={title ? `${title} - banner profissional, moderno, 16:9` : ''}
-              onBannerGenerated={(url) => setBannerUrl(url)}
-              onBannerRemoved={() => setBannerUrl(null)}
-              entityType="module"
-              entityName={title}
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-3">
-          <Button type="submit" isLoading={isSubmitting}>
-            {isEditing ? 'Salvar' : 'Criar Módulo'}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Cancelar
-          </Button>
-        </div>
-      </form>
+      {formContent}
     </div>
   );
 }

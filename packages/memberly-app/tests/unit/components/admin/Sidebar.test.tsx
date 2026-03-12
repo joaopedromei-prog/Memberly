@@ -29,7 +29,6 @@ describe('Sidebar', () => {
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Produtos')).toBeInTheDocument();
     expect(screen.getByText('Membros')).toBeInTheDocument();
-    expect(screen.getByText('Configurações')).toBeInTheDocument();
   });
 
   it('renders Memberly Admin logo', () => {
