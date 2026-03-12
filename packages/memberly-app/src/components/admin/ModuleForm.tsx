@@ -1,0 +1,140 @@
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/Button';
+import { ImageUpload } from '@/components/admin/ImageUpload';
+import { apiRequest, ApiRequestError } from '@/lib/utils/api';
+import { useToastStore } from '@/stores/toast-store';
+import type { Module } from '@/types/database';
+
+interface ModuleFormProps {
+  productId: string;
+  module?: Module;
+  onSuccess: () => void;
+  onCancel: () => void;
+}
+
+export function ModuleForm({
+  productId,
+  module,
+  onSuccess,
+  onCancel,
+}: ModuleFormProps) {
+  const addToast = useToastStore((s) => s.addToast);
+  const isEditing = !!module;
+
+  const [title, setTitle] = useState(module?.title ?? '');
+  const [description, setDescription] = useState(module?.description ?? '');
+  const [bannerUrl, setBannerUrl] = useState<string | null>(
+    module?.banner_url ?? null
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!title.trim()) {
+      setError('Título é obrigatório');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      if (isEditing) {
+        await apiRequest(`/api/modules/${module.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ title, description, banner_url: bannerUrl }),
+        });
+        addToast('Módulo atualizado com sucesso', 'success');
+      } else {
+        await apiRequest(`/api/products/${productId}/modules`, {
+          method: 'POST',
+          body: JSON.stringify({ title, description, banner_url: bannerUrl }),
+        });
+        addToast('Módulo criado com sucesso', 'success');
+      }
+      onSuccess();
+    } catch (err) {
+      addToast(
+        err instanceof ApiRequestError ? err.message : 'Erro ao salvar módulo',
+        'error'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <h3 className="mb-4 text-lg font-semibold text-gray-900">
+        {isEditing ? 'Editar Módulo' : 'Novo Módulo'}
+      </h3>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label
+            htmlFor="module-title"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Título *
+          </label>
+          <input
+            id="module-title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            placeholder="Ex: Módulo 1 — Fundamentos"
+          />
+          {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+        </div>
+
+        <div>
+          <label
+            htmlFor="module-description"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Descrição
+          </label>
+          <textarea
+            id="module-description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            placeholder="Descreva o módulo..."
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Banner
+          </label>
+          <div className="mt-1">
+            <ImageUpload
+              value={bannerUrl}
+              onChange={setBannerUrl}
+              onError={(msg) => addToast(msg, 'error')}
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <Button type="submit" isLoading={isSubmitting}>
+            {isEditing ? 'Salvar' : 'Criar Módulo'}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            Cancelar
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+}

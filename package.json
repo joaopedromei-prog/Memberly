@@ -1,0 +1,15 @@
+{
+  "name": "memberly",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=memberly-app",
+    "build": "npm run build --workspace=memberly-app",
+    "lint": "npm run lint --workspace=memberly-app",
+    "test": "npm run test --workspace=memberly-app",
+    "typecheck": "npm run typecheck --workspace=memberly-app"
+  }
+}
