@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { buildBannerPrompt } from '@/lib/ai/prompts/generate-banner';
 
 const MAX_RETRIES = 2;
-const TIMEOUT_MS = 30000;
+const TIMEOUT_MS = 60000;
 
 function getClient(): GoogleGenerativeAI {
   return new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
@@ -19,7 +19,7 @@ export interface GeneratedBanner {
 
 export async function generateBanner(description: string): Promise<GeneratedBanner> {
   const genAI = getClient();
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image' });
   const prompt = buildBannerPrompt(description);
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { SortableList } from '@/components/ui/SortableList';
 import { ModuleForm } from '@/components/admin/ModuleForm';
@@ -155,13 +156,24 @@ export function ModuleList({
             )}
 
             <div className="flex-1">
-              <p className="font-medium text-gray-900">{module.title}</p>
+              <Link
+                href={`/admin/products/${productId}/modules/${module.id}/lessons`}
+                className="font-medium text-gray-900 hover:text-blue-600"
+              >
+                {module.title}
+              </Link>
               <p className="text-sm text-gray-500">
                 {lessonCount(module)} aula{lessonCount(module) !== 1 ? 's' : ''}
               </p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/admin/products/${productId}/modules/${module.id}/lessons`}
+                className="inline-flex items-center rounded-md bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-100"
+              >
+                Gerenciar Aulas ({lessonCount(module)})
+              </Link>
               <button
                 onClick={() => handleDuplicate(module)}
                 className="text-sm text-purple-600 hover:text-purple-800"

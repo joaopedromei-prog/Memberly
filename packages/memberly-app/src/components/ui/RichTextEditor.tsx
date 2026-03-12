@@ -45,6 +45,7 @@ export function RichTextEditor({
   placeholder = 'Escreva aqui...',
 }: RichTextEditorProps) {
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         heading: {

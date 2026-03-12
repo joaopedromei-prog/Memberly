@@ -147,6 +147,12 @@ export function ProductList({ products: initialProducts }: ProductListProps) {
                 <td className="whitespace-nowrap px-6 py-4 text-right text-sm">
                   <div className="flex justify-end gap-2">
                     <Link
+                      href={`/admin/products/${product.id}/modules`}
+                      className="text-purple-600 hover:text-purple-800"
+                    >
+                      Módulos
+                    </Link>
+                    <Link
                       href={`/admin/products/${product.id}`}
                       className="text-blue-600 hover:text-blue-800"
                     >
