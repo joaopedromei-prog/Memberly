@@ -9,8 +9,7 @@ export async function findOrCreateMember(
   const { data: existingUsers, error: listError } =
     await adminClient.auth.admin.listUsers({
       page: 1,
-      perPage: 1,
-      filter: email,
+      perPage: 1000,
     });
 
   if (listError) {

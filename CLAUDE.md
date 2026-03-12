@@ -4,34 +4,105 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Memberly** is a greenfield full-stack application being developed using the **Synkra AIOX** AI-orchestrated development framework (v5.0.3). The project uses a story-driven development methodology where all work originates from stories in `docs/stories/`.
+**Memberly** is a Netflix-style member area platform for digital courses, built with the **Synkra AIOX** AI-orchestrated development framework (v5.0.3). Story-driven methodology — all work originates from stories in `docs/stories/`.
 
-**Active tech stack:** Next.js 16+, React, TypeScript, Tailwind CSS, Zustand, Supabase.
+**Tech stack:** Next.js 16+ (App Router), React 19, TypeScript 5, Tailwind CSS 4, Zustand 5, Supabase (Auth + PostgreSQL + Storage), Vitest.
 
 ## Development Commands
 
-Commands run from `.aiox-core/`:
+Monorepo with single package `packages/memberly-app`. All commands run from **project root**:
 
+```bash
+npm run dev                # Start Next.js dev server (Turbopack)
+npm run build              # Production build
+npm run lint               # ESLint
+npm run typecheck          # tsc --noEmit
+npm test                   # Run all tests (vitest)
+```
+
+Run from `packages/memberly-app/` for more options:
+
+```bash
+npm run test:unit          # Unit tests only (vitest run tests/unit)
+npm run test:watch         # Watch mode (vitest)
+npm run lint:fix           # Auto-fix ESLint issues
+npm run format             # Prettier formatting
+```
+
+Run a single test file:
+```bash
+cd packages/memberly-app && npx vitest run tests/unit/lib/utils/slugify.test.ts
+```
+
+AIOX framework commands (from `.aiox-core/`):
 ```bash
 npm run build              # Build AIOX core
-npm test                   # Run unit + integration tests
-npm run test:unit          # Unit tests only (jest tests/unit)
-npm run test:integration   # Integration tests only (jest tests/integration)
-npm run lint               # ESLint check
-npm run typecheck          # TypeScript type checking (tsc --noEmit)
+npm test                   # Framework tests (jest)
 ```
 
-Validation commands (root):
+## Application Architecture
 
-```bash
-npm run validate:structure  # Validate project structure
-npm run validate:agents     # Validate agent definitions
-npm run sync:ide            # Sync IDE configurations
-```
+### Route Structure (Next.js App Router)
 
-## Architecture
+All app code lives in `packages/memberly-app/src/`.
 
-### Layer Model (Framework vs Project)
+- `app/(auth)/` — Login, forgot-password (public)
+- `app/(member)/` — Member dashboard, product browsing, lesson player (authenticated)
+- `app/admin/` — Admin panel: products, modules, lessons, members, settings
+- `app/api/` — REST API route handlers
+
+Key dynamic routes:
+- `(member)/products/[slug]/` — Product detail page
+- `(member)/products/[slug]/lessons/[lessonId]/` — Lesson player
+- `admin/products/[id]/modules/[moduleId]/lessons/` — Lesson management
+
+### Data Layer
+
+**Supabase** with RLS (Row-Level Security) for data isolation. Migrations in `packages/memberly-app/supabase/migrations/`.
+
+Core tables: `profiles` (members/admins), `products`, `modules`, `lessons`, `member_access`, `comments`, `lesson_progress`, `product_mappings`, `webhook_logs`.
+
+Three Supabase clients in `src/lib/supabase/`:
+- `client.ts` — Browser client (anon key)
+- `server.ts` — Server components/route handlers (cookie-based auth)
+- `admin.ts` — Service role client (bypasses RLS, for webhooks/admin ops)
+
+### AI Integration
+
+- **Gemini API** (`src/lib/ai/gemini-client.ts`) — Generates visual banners for products/modules. Model: `gemini-2.0-flash-exp`.
+- Banner generation available in product/module forms via `api/ai/generate-banner`
+
+### State Management
+
+Zustand stores in `src/stores/`: `auth-store.ts`, `toast-store.ts`, `ui-store.ts`.
+
+### Webhook System
+
+Payment gateway (Payt) integration in `src/lib/webhooks/`:
+- Signature validation → product lookup via `product_mappings` → auto-grant member access
+- Endpoint: `api/webhooks/payt/`
+
+### Component Organization
+
+- `src/components/admin/` — Admin panel (forms, lists, banner generation)
+- `src/components/member/` — Member area (hero banners, product cards, lesson layout)
+- `src/components/shared/` — VideoPlayer (YouTube/Panda), PdfViewer, Comments
+- `src/components/ui/` — Base primitives (Button, Input, Card, SortableList)
+
+### Import Conventions
+
+Absolute imports via `@/*` alias mapped to `src/*` (configured in `tsconfig.json`). Use `@/lib/...`, `@/components/...`, `@/stores/...`, `@/types/...`.
+
+### Test Structure
+
+Tests in `packages/memberly-app/tests/`:
+- `unit/` — Components, lib, hooks, utils (vitest + @testing-library/react + jsdom)
+- `integration/` — API routes, AI generation, webhooks
+- `e2e/` — Full flows (webhook → access grant)
+
+## AIOX Framework
+
+### Layer Model
 
 | Layer | Paths | Rule |
 |-------|-------|------|
@@ -40,19 +111,9 @@ npm run sync:ide            # Sync IDE configurations
 | L3 — Project Config | `.aiox-core/data/`, `agents/*/MEMORY.md`, `core-config.yaml` | Mutable with exceptions |
 | L4 — Project Runtime | `docs/stories/`, `packages/`, `squads/`, `tests/` | Always modify freely |
 
-### Key Directories
-
-- `docs/stories/` — Active development stories (source of truth for work in progress)
-- `docs/prd/` — Product requirement documents (sharded epics)
-- `docs/architecture/` — Architecture decisions and documentation
-- `packages/` — Application source code (Next.js app goes here)
-- `.aiox-core/development/agents/` — Agent persona definitions
-- `.aiox-core/development/tasks/` — 115+ executable task definitions
-- `.ai/` — Decision logs (ADR format, auto-generated)
-
 ### Agent System
 
-Agents are activated with `@agent-name` or `/AIOX:agents:agent-name`:
+Agents activated with `@agent-name` or `/AIOX:agents:agent-name`:
 
 | Agent | Role | Exclusive Operations |
 |-------|------|---------------------|
@@ -75,21 +136,12 @@ Agents are activated with `@agent-name` or `/AIOX:agents:agent-name`:
 @sm *create-story → @po *validate-story → @dev *develop → @qa *qa-gate → @devops *push
 ```
 
-All development must start from a story. Stories live at `docs/stories/` and track progress via checkboxes `[ ]` → `[x]`.
+All development starts from a story. Stories in `docs/stories/` track progress via `[ ]` → `[x]`.
 
-### Configuration
-
-- `core-config.yaml` — Framework settings (tech stack preset, agent locations, QA config)
-- `.env` — Environment variables (Supabase, GitHub, LLM API keys — see `.env.example`)
-- `docs/framework/tech-stack.md` — Active tech stack details (auto-loaded for `@dev`)
-- `docs/framework/coding-standards.md` — Code standards (auto-loaded for `@dev`)
-
-## Constitutional Principles
-
-Non-negotiable rules enforced by the framework:
+### Constitutional Principles
 
 - **CLI First** — Build CLI/API before UI
 - **Agent Authority** — Respect agent boundaries and exclusive operations
 - **Story-Driven** — All work stems from stories, no ad-hoc development
 - **No Invention** — Implement only what stories/PRD specify
-- **Absolute Imports** — Use absolute import paths in application code
+- **Absolute Imports** — Use `@/` absolute import paths

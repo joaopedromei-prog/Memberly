@@ -64,6 +64,7 @@ export interface CreateLessonRequest {
   video_id?: string;
   pdf_url?: string | null;
   duration_minutes?: number | null;
+  is_published?: boolean;
 }
 
 export interface UpdateLessonRequest {
@@ -73,6 +74,7 @@ export interface UpdateLessonRequest {
   video_id?: string;
   pdf_url?: string | null;
   duration_minutes?: number | null;
+  is_published?: boolean;
 }
 
 export interface ApiError {

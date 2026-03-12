@@ -54,6 +54,21 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Preview mode on member routes — allow admin to bypass member_access
+  const isPreview = request.nextUrl.searchParams.get('preview') === 'true';
+  if (isPreview && path.startsWith('/products')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.role === 'admin') {
+      // Set a header so the page knows it's an admin preview
+      supabaseResponse.headers.set('x-admin-preview', 'true');
+    }
+  }
+
   return supabaseResponse;
 }
 

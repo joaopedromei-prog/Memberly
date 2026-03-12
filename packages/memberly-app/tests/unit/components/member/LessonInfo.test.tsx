@@ -22,8 +22,6 @@ const defaultProps = {
   durationMinutes: 15 as number | null,
   pdfUrl: null as string | null,
   isCompleted: false,
-  prevLessonUrl: null as string | null,
-  nextLessonUrl: '/products/react/lessons/les-2',
   breadcrumbs: [
     { label: 'Home', href: '/' },
     { label: 'React', href: '/products/react' },
@@ -77,27 +75,4 @@ describe('LessonInfo', () => {
     });
   });
 
-  it('renders next lesson link', () => {
-    render(<LessonInfo {...defaultProps} />);
-    const nextLink = screen.getByLabelText('Próxima aula');
-    expect(nextLink.closest('a')).toHaveAttribute('href', '/products/react/lessons/les-2');
-  });
-
-  it('disables prev button when no previous lesson', () => {
-    render(<LessonInfo {...defaultProps} />);
-    const prevBtn = screen.getByLabelText('Aula anterior');
-    expect(prevBtn).toBeDisabled();
-  });
-
-  it('renders prev link when available', () => {
-    render(<LessonInfo {...defaultProps} prevLessonUrl="/products/react/lessons/les-0" />);
-    const prevLink = screen.getByLabelText('Aula anterior');
-    expect(prevLink.closest('a')).toHaveAttribute('href', '/products/react/lessons/les-0');
-  });
-
-  it('disables next button when no next lesson', () => {
-    render(<LessonInfo {...defaultProps} nextLessonUrl={null} />);
-    const nextBtn = screen.getByLabelText('Próxima aula');
-    expect(nextBtn).toBeDisabled();
-  });
 });

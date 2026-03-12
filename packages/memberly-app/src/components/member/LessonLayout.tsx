@@ -2,24 +2,26 @@ interface LessonLayoutProps {
   player: React.ReactNode;
   info: React.ReactNode;
   comments?: React.ReactNode;
+  navigation?: React.ReactNode;
   sidebar: React.ReactNode;
 }
 
-export function LessonLayout({ player, info, comments, sidebar }: LessonLayoutProps) {
+export function LessonLayout({ player, info, comments, navigation, sidebar }: LessonLayoutProps) {
   return (
-    <div className="flex flex-col md:flex-row md:gap-4 lg:gap-6">
-      {/* Main content: 70% desktop, 65% tablet */}
-      <div className="w-full md:w-[65%] lg:w-[70%]">
+    <div className="flex flex-col lg:flex-row lg:gap-6">
+      {/* Left column: video, info, comments, navigation — 70% on desktop */}
+      <div className="w-full lg:w-[70%]">
         {player}
-        <div className="px-4 pb-8 sm:px-6 lg:px-0">
+        <div className="bg-[#141414] px-4 pb-8 sm:px-6 lg:px-0">
           {info}
           {comments}
+          {navigation}
         </div>
       </div>
 
-      {/* Sidebar: 30% desktop, 35% tablet */}
-      <div className="w-full px-4 pb-8 sm:px-6 md:w-[35%] md:px-0 lg:w-[30%]">
-        <div className="md:sticky md:top-4 md:max-h-[calc(100vh-2rem)] md:overflow-y-auto">
+      {/* Right column: lesson navigation sidebar — 30% on desktop, sticky */}
+      <div className="w-full px-4 pb-8 sm:px-6 lg:w-[30%] lg:px-0">
+        <div className="scrollbar-dark lg:sticky lg:top-[80px] lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto">
           {sidebar}
         </div>
       </div>

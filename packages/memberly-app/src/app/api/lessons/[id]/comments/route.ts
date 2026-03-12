@@ -78,7 +78,7 @@ export async function POST(
     return apiError('NOT_FOUND', 'Aula não encontrada', 404);
   }
 
-  const productId = (lesson.module as { product_id: string }).product_id;
+  const productId = (lesson.module as unknown as { product_id: string }).product_id;
 
   const { data: access } = await supabase
     .from('member_access')

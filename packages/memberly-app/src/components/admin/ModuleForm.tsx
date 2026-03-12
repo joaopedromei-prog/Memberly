@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
-import { ImageUpload } from '@/components/admin/ImageUpload';
+import { BannerGenerator } from '@/components/admin/BannerGenerator';
 import { apiRequest, ApiRequestError } from '@/lib/utils/api';
 import { useToastStore } from '@/stores/toast-store';
 import type { Module } from '@/types/database';
@@ -113,10 +113,13 @@ export function ModuleForm({
             Banner
           </label>
           <div className="mt-1">
-            <ImageUpload
-              value={bannerUrl}
-              onChange={setBannerUrl}
-              onError={(msg) => addToast(msg, 'error')}
+            <BannerGenerator
+              currentBannerUrl={bannerUrl ?? undefined}
+              defaultPrompt={title ? `${title} - banner profissional, moderno, 16:9` : ''}
+              onBannerGenerated={(url) => setBannerUrl(url)}
+              onBannerRemoved={() => setBannerUrl(null)}
+              entityType="module"
+              entityName={title}
             />
           </div>
         </div>

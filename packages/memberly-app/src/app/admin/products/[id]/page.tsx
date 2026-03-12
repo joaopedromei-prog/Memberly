@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ProductForm } from '@/components/admin/ProductForm';
 import { ProductMappings } from '@/components/admin/ProductMappings';
+import { PreviewButton } from '@/components/admin/PreviewButton';
 
 interface EditProductPageProps {
   params: Promise<{ id: string }>;
@@ -23,8 +24,13 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
 
   return (
     <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Editar Produto</h2>
+        {product.slug && (
+          <PreviewButton slug={product.slug} />
+        )}
+      </div>
       <div>
-        <h2 className="mb-6 text-2xl font-bold text-gray-900">Editar Produto</h2>
         <div className="rounded-lg bg-white p-6 shadow-sm">
           <ProductForm product={product} />
         </div>

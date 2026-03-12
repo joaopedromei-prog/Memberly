@@ -30,6 +30,21 @@ function ProviderBadge({ provider }: { provider: string }) {
   );
 }
 
+function PublishBadge({ isPublished }: { isPublished: boolean }) {
+  if (isPublished) {
+    return (
+      <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+        Publicada
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+      Rascunho
+    </span>
+  );
+}
+
 export function LessonList({
   moduleId,
   lessons: initialLessons,
@@ -78,6 +93,44 @@ export function LessonList({
       );
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleTogglePublish = async (lesson: Lesson) => {
+    try {
+      await apiRequest(`/api/lessons/${lesson.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ is_published: !lesson.is_published }),
+      });
+      setLessons((prev) =>
+        prev.map((l) =>
+          l.id === lesson.id ? { ...l, is_published: !l.is_published } : l
+        )
+      );
+      addToast(
+        lesson.is_published ? 'Aula despublicada' : 'Aula publicada',
+        'success'
+      );
+    } catch (err) {
+      addToast(
+        err instanceof ApiRequestError ? err.message : 'Erro ao alterar status',
+        'error'
+      );
+    }
+  };
+
+  const handleDuplicate = async (lesson: Lesson) => {
+    try {
+      const data = await apiRequest<Lesson>(`/api/lessons/${lesson.id}/duplicate`, {
+        method: 'POST',
+      });
+      setLessons((prev) => [...prev, data]);
+      addToast('Aula duplicada com sucesso', 'success');
+    } catch (err) {
+      addToast(
+        err instanceof ApiRequestError ? err.message : 'Erro ao duplicar aula',
+        'error'
+      );
     }
   };
 
@@ -142,19 +195,37 @@ export function LessonList({
             <div className="flex-1">
               <p className="font-medium text-gray-900">{lesson.title}</p>
               <div className="mt-1 flex items-center gap-2">
+                <PublishBadge isPublished={lesson.is_published} />
                 <ProviderBadge provider={lesson.video_provider} />
                 {lesson.duration_minutes && (
                   <span className="text-xs text-gray-500">
                     {lesson.duration_minutes} min
                   </span>
                 )}
-                {lesson.pdf_url && (
+                {lesson.attachments && lesson.attachments.length > 0 && (
+                  <span className="text-xs text-blue-600">
+                    {lesson.attachments.length} arquivo{lesson.attachments.length !== 1 ? 's' : ''}
+                  </span>
+                )}
+                {!lesson.attachments?.length && lesson.pdf_url && (
                   <span className="text-xs text-blue-600">PDF</span>
                 )}
               </div>
             </div>
 
             <div className="flex gap-2">
+              <button
+                onClick={() => handleTogglePublish(lesson)}
+                className={`text-sm ${lesson.is_published ? 'text-amber-600 hover:text-amber-800' : 'text-green-600 hover:text-green-800'}`}
+              >
+                {lesson.is_published ? 'Despublicar' : 'Publicar'}
+              </button>
+              <button
+                onClick={() => handleDuplicate(lesson)}
+                className="text-sm text-purple-600 hover:text-purple-800"
+              >
+                Duplicar
+              </button>
               <button
                 onClick={() => setEditingLesson(lesson)}
                 className="text-sm text-blue-600 hover:text-blue-800"

@@ -74,24 +74,24 @@ export function LessonSidebar({
       {/* Desktop sidebar */}
       <nav
         aria-label="Aulas do módulo"
-        className="hidden rounded-lg bg-dark-surface sm:block"
+        className="hidden rounded-lg bg-[#1a1a1a] lg:block"
       >
-        <div className="border-b border-dark-border p-4">
+        <div className="border-b border-neutral-800 p-4">
           <h3 className="text-lg font-semibold text-white">{moduleName}</h3>
           <p className="mt-1 text-xs text-neutral-400">
             {completedCount}/{lessons.length} aulas concluídas
           </p>
         </div>
-        <div className="max-h-[60vh] overflow-y-auto lg:max-h-[70vh]">
+        <div className="scrollbar-dark overflow-y-auto">
           {listContent}
         </div>
       </nav>
 
-      {/* Mobile accordion */}
-      <div className="sm:hidden">
+      {/* Mobile/tablet accordion */}
+      <div className="lg:hidden">
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="flex w-full min-h-[44px] items-center justify-between rounded-lg bg-dark-surface px-4 py-3 text-sm text-white"
+          className="flex w-full min-h-[44px] items-center justify-between rounded-lg bg-[#1a1a1a] px-4 py-3 text-sm text-white"
           aria-expanded={mobileOpen}
         >
           <span>Outras aulas deste módulo ({completedCount}/{lessons.length})</span>
@@ -105,7 +105,7 @@ export function LessonSidebar({
             mobileOpen ? 'max-h-[2000px]' : 'max-h-0'
           )}
         >
-          <nav aria-label="Aulas do módulo" className="rounded-b-lg bg-dark-surface">
+          <nav aria-label="Aulas do módulo" className="rounded-b-lg bg-[#1a1a1a]">
             {listContent}
           </nav>
         </div>

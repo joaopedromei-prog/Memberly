@@ -5,21 +5,23 @@ export async function calculateModuleProgress(
   moduleId: string,
   userId: string
 ): Promise<{ total: number; completed: number; percent: number }> {
-  // Total lessons in module
+  // Total published lessons in module
   const { count: total } = await supabase
     .from('lessons')
     .select('id', { count: 'exact', head: true })
-    .eq('module_id', moduleId);
+    .eq('module_id', moduleId)
+    .eq('is_published', true);
 
   if (!total || total === 0) {
     return { total: 0, completed: 0, percent: 0 };
   }
 
-  // Get lesson IDs in this module
+  // Get published lesson IDs in this module
   const { data: lessons } = await supabase
     .from('lessons')
     .select('id')
-    .eq('module_id', moduleId);
+    .eq('module_id', moduleId)
+    .eq('is_published', true);
 
   const lessonIds = (lessons || []).map((l) => l.id);
 
@@ -58,21 +60,23 @@ export async function calculateProductProgress(
 
   const moduleIds = modules.map((m) => m.id);
 
-  // Total lessons across all modules
+  // Total published lessons across all modules
   const { count: total } = await supabase
     .from('lessons')
     .select('id', { count: 'exact', head: true })
-    .in('module_id', moduleIds);
+    .in('module_id', moduleIds)
+    .eq('is_published', true);
 
   if (!total || total === 0) {
     return { total: 0, completed: 0, percent: 0 };
   }
 
-  // Get all lesson IDs
+  // Get all published lesson IDs
   const { data: lessons } = await supabase
     .from('lessons')
     .select('id')
-    .in('module_id', moduleIds);
+    .in('module_id', moduleIds)
+    .eq('is_published', true);
 
   const lessonIds = (lessons || []).map((l) => l.id);
 

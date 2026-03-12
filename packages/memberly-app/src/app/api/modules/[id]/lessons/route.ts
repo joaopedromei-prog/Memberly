@@ -60,8 +60,10 @@ export async function POST(
       video_provider: body.video_provider || 'youtube',
       video_id: body.video_id || '',
       pdf_url: body.pdf_url || null,
+      attachments: body.attachments || [],
       sort_order: nextOrder,
       duration_minutes: body.duration_minutes || null,
+      is_published: body.is_published ?? false,
     })
     .select()
     .single();

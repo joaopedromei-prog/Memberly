@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
-import { PdfUpload } from '@/components/admin/PdfUpload';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
+import { BulkFileUpload } from '@/components/admin/BulkFileUpload';
 import { VideoPlayer } from '@/components/shared/VideoPlayer';
 import { extractVideoId } from '@/lib/utils/video';
 import { useToastStore } from '@/stores/toast-store';
-import type { Lesson, VideoProvider } from '@/types/database';
+import type { Lesson, VideoProvider, LessonAttachment } from '@/types/database';
 
 interface LessonFormProps {
   moduleId: string;
@@ -34,7 +35,10 @@ export function LessonForm({
   const [durationMinutes, setDurationMinutes] = useState<string>(
     lesson?.duration_minutes?.toString() ?? ''
   );
-  const [pdfUrl, setPdfUrl] = useState<string | null>(lesson?.pdf_url ?? null);
+  const [attachments, setAttachments] = useState<LessonAttachment[]>(
+    lesson?.attachments ?? []
+  );
+  const [isPublished, setIsPublished] = useState(lesson?.is_published ?? false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -54,13 +58,18 @@ export function LessonForm({
     setIsSubmitting(true);
     setError('');
 
+    // Derive pdf_url from attachments for backward compatibility
+    const firstPdf = attachments.find((a) => a.type === 'application/pdf');
+
     const payload = {
       title,
       description,
       video_provider: videoProvider,
       video_id: videoId,
       duration_minutes: durationMinutes ? parseInt(durationMinutes, 10) : null,
-      pdf_url: pdfUrl,
+      pdf_url: firstPdf?.url ?? null,
+      attachments,
+      is_published: isPublished,
     };
 
     try {
@@ -120,18 +129,12 @@ export function LessonForm({
         </div>
 
         <div>
-          <label
-            htmlFor="lesson-description"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label className="block text-sm font-medium text-gray-700">
             Descrição
           </label>
-          <textarea
-            id="lesson-description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          <RichTextEditor
+            content={description}
+            onChange={setDescription}
             placeholder="Descreva a aula..."
           />
         </div>
@@ -211,11 +214,40 @@ export function LessonForm({
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            PDF (opcional)
+            Arquivos (opcional)
           </label>
           <div className="mt-1">
-            <PdfUpload value={pdfUrl} onChange={setPdfUrl} />
+            <BulkFileUpload value={attachments} onFilesChanged={setAttachments} />
           </div>
+        </div>
+
+        <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <label className="relative inline-flex cursor-pointer items-center">
+            <input
+              type="checkbox"
+              checked={isPublished}
+              onChange={(e) => setIsPublished(e.target.checked)}
+              className="peer sr-only"
+            />
+            <div className="peer h-6 w-11 rounded-full bg-gray-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-green-500 peer-checked:after:translate-x-full" />
+          </label>
+          <div>
+            <span className="text-sm font-medium text-gray-700">Publicada</span>
+            <p className="text-xs text-gray-500">
+              {isPublished
+                ? 'A aula está visível para os membros'
+                : 'A aula está em rascunho e não será visível'}
+            </p>
+          </div>
+          {isPublished ? (
+            <span className="ml-auto inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+              Publicada
+            </span>
+          ) : (
+            <span className="ml-auto inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+              Rascunho
+            </span>
+          )}
         </div>
 
         <div className="flex gap-3">

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
-import { ImageUpload } from '@/components/admin/ImageUpload';
+import { BannerGenerator } from '@/components/admin/BannerGenerator';
 import { slugify } from '@/lib/utils/slugify';
 import { apiRequest, ApiRequestError } from '@/lib/utils/api';
 import { useToastStore } from '@/stores/toast-store';
@@ -140,10 +140,14 @@ export function ProductForm({ product }: ProductFormProps) {
       <div>
         <label className="block text-sm font-medium text-gray-700">Banner</label>
         <div className="mt-1">
-          <ImageUpload
-            value={bannerUrl}
-            onChange={setBannerUrl}
-            onError={(msg) => addToast(msg, 'error')}
+          <BannerGenerator
+            currentBannerUrl={bannerUrl ?? undefined}
+            defaultPrompt={title ? `${title} - banner profissional, moderno, 16:9` : ''}
+            onBannerGenerated={(url) => setBannerUrl(url)}
+            onBannerRemoved={() => setBannerUrl(null)}
+            entityType="product"
+            entityName={title}
+            productSlug={slug || undefined}
           />
         </div>
       </div>

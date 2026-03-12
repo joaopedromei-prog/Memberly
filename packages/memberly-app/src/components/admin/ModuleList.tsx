@@ -68,6 +68,22 @@ export function ModuleList({
     }
   };
 
+  const handleDuplicate = async (module: ModuleWithLessonCount) => {
+    try {
+      const data = await apiRequest<ModuleWithLessonCount>(
+        `/api/modules/${module.id}/duplicate`,
+        { method: 'POST' }
+      );
+      setModules((prev) => [...prev, data]);
+      addToast('Módulo duplicado com sucesso', 'success');
+    } catch (err) {
+      addToast(
+        err instanceof ApiRequestError ? err.message : 'Erro ao duplicar módulo',
+        'error'
+      );
+    }
+  };
+
   const handleFormSuccess = () => {
     setShowForm(false);
     setEditingModule(null);
@@ -146,6 +162,12 @@ export function ModuleList({
             </div>
 
             <div className="flex gap-2">
+              <button
+                onClick={() => handleDuplicate(module)}
+                className="text-sm text-purple-600 hover:text-purple-800"
+              >
+                Duplicar
+              </button>
               <button
                 onClick={() => setEditingModule(module)}
                 className="text-sm text-blue-600 hover:text-blue-800"

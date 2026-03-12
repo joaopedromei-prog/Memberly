@@ -28,7 +28,7 @@ Este documento define a arquitetura fullstack completa do **Memberly** — plata
 
 ### Technical Summary
 
-O Memberly adota uma **arquitetura serverless fullstack** usando Next.js 16+ como camada unificada de frontend e API, com Supabase como backend-as-a-service (PostgreSQL, Auth, Storage). O frontend usa React Server Components por padrão, com Client Components para interatividade. A comunicação entre frontend e backend ocorre via Next.js Route Handlers (REST-like), eliminando a necessidade de um backend separado. A infraestrutura é totalmente gerenciada: Vercel para compute/CDN e Supabase para dados/auth/storage. Duas APIs externas complementam o sistema: Claude API (Anthropic) para geração textual de estrutura de cursos e Gemini API (Google) para geração de banners visuais.
+O Memberly adota uma **arquitetura serverless fullstack** usando Next.js 16+ como camada unificada de frontend e API, com Supabase como backend-as-a-service (PostgreSQL, Auth, Storage). O frontend usa React Server Components por padrão, com Client Components para interatividade. A comunicação entre frontend e backend ocorre via Next.js Route Handlers (REST-like), eliminando a necessidade de um backend separado. A infraestrutura é totalmente gerenciada: Vercel para compute/CDN e Supabase para dados/auth/storage. Uma API externa complementa o sistema: Gemini API (Google) para geração de banners visuais.
 
 ### Platform and Infrastructure
 
@@ -37,7 +37,6 @@ O Memberly adota uma **arquitetura serverless fullstack** usando Next.js 16+ com
 **Key Services:**
 - **Vercel:** Hosting Next.js (Edge Runtime + Node.js Runtime), CDN global, preview deployments, analytics
 - **Supabase:** PostgreSQL database, Auth (email/senha), Storage (PDFs, banners), Realtime (futuro), Row Level Security
-- **Claude API:** Geração de estrutura textual (módulos, aulas, descrições)
 - **Gemini API:** Geração de imagens de banners
 
 **Deployment Regions:**
@@ -75,7 +74,6 @@ graph TB
         Payt[Payt Gateway<br/>Webhooks]
         YouTube[YouTube<br/>Video Embed]
         PandaVideo[Panda Video<br/>Video Embed]
-        Claude[Claude API<br/>Text Generation]
         Gemini[Gemini API<br/>Image Generation]
     end
 
@@ -86,7 +84,6 @@ graph TB
     API --> Auth
     API --> DB
     API --> Storage
-    API --> Claude
     API --> Gemini
     Payt -->|Webhook POST| API
     NextJS -->|iframe embed| YouTube
@@ -116,7 +113,6 @@ graph TB
 | Database | PostgreSQL (Supabase) | 15+ | Dados relacionais + RLS | Supabase-managed, RLS nativo, free tier |
 | Auth | Supabase Auth | latest | Email/senha, sessions | Zero config, integrado com RLS |
 | File Storage | Supabase Storage | latest | PDFs, banners | Integrado, signed URLs, policies |
-| AI (Texto) | Claude API | latest | Geração de estrutura | Qualidade superior em texto estruturado |
 | AI (Imagens) | Gemini API | latest | Geração de banners | Geração de imagens nativa |
 | Testing (Unit) | Vitest | 3.x | Unit + integration tests | Mais rápido que Jest, compatível com Vite |
 | Testing (Components) | React Testing Library | 16.x | Testes de componentes | Testing-library pattern, acessibilidade |
@@ -479,7 +475,6 @@ Todas as rotas (exceto webhook e auth) requerem session válida via Supabase Aut
 #### AI Generation (Admin)
 | Method | Route | Auth | Description |
 |--------|-------|------|-------------|
-| POST | `/api/ai/generate-structure` | Admin | Gerar estrutura via Claude API |
 | POST | `/api/ai/generate-banner` | Admin | Gerar banner via Gemini API |
 
 #### Webhooks
@@ -515,19 +510,6 @@ interface ApiError {
 ---
 
 ## 6. External APIs
-
-### Claude API (Anthropic)
-
-- **Purpose:** Geração de estrutura textual de áreas de membros (módulos, aulas, títulos, descrições)
-- **Documentation:** https://docs.anthropic.com/
-- **Base URL:** `https://api.anthropic.com/v1`
-- **Authentication:** API Key via header `x-api-key`
-- **Rate Limits:** Depende do tier; free tier: 5 RPM, 20K tokens/min
-
-**Key Endpoints Used:**
-- `POST /messages` — Enviar prompt estruturado e receber JSON com estrutura de curso
-
-**Integration Notes:** Usar `@anthropic-ai/sdk` (Anthropic SDK). O prompt deve instruir output em JSON com schema definido. Timeout de 30s. Retry com backoff exponencial em caso de rate limit (429).
 
 ### Gemini API (Google)
 
@@ -591,45 +573,31 @@ sequenceDiagram
     DB-->>Buyer: Produtos com acesso (inclui novo)
 ```
 
-### Workflow 2: Admin Cria Área de Membros via IA
+### Workflow 2: Admin Gera Banner via IA
 
 ```mermaid
 sequenceDiagram
     actor Admin
-    participant UI as Admin UI (Wizard)
-    participant API as /api/ai/*
-    participant Claude as Claude API
+    participant UI as Admin UI (Formulário)
+    participant API as /api/ai/generate-banner
     participant Gemini as Gemini API
-    participant DB as Supabase DB
     participant Storage as Supabase Storage
 
-    Admin->>UI: Clica "Criar com IA"
-    UI->>Admin: Formulário (nome, tema, público, nº módulos)
-    Admin->>UI: Preenche inputs
-    UI->>API: POST /api/ai/generate-structure
-    API->>Claude: Prompt estruturado + inputs
-    Claude-->>API: JSON (módulos, aulas, descrições)
-    API-->>UI: Estrutura gerada
-    UI->>Admin: Preview da estrutura
+    Admin->>UI: Clica "Gerar Banner com IA" no formulário de produto/módulo
+    UI->>API: POST /api/ai/generate-banner
+    API->>Gemini: Prompt com descrição visual
+    Gemini-->>API: Imagem base64
+    API->>Storage: Upload imagem
+    Storage-->>API: URL do banner
+    API-->>UI: Banner gerado (URL)
+    UI->>Admin: Preview do banner para aprovação
 
-    opt Geração de banners
-        Admin->>UI: Ativa "Gerar banners"
-        loop Para cada módulo + produto
-            UI->>API: POST /api/ai/generate-banner
-            API->>Gemini: Prompt com descrição visual
-            Gemini-->>API: Imagem base64
-            API->>Storage: Upload imagem
-            Storage-->>API: URL do banner
-        end
-        API-->>UI: Banners gerados
+    alt Admin aprova
+        Admin->>UI: Aceita banner
+        UI->>UI: Usa URL no formulário
+    else Admin rejeita
+        Admin->>UI: Regenerar ou upload manual
     end
-
-    Admin->>UI: Revisa, edita, aprova
-    UI->>API: POST /api/products (com módulos e aulas)
-    API->>DB: Insert product + modules + lessons
-    DB-->>API: IDs criados
-    API-->>UI: Sucesso
-    UI->>Admin: "Área de membros criada!"
 ```
 
 ### Workflow 3: Membro Assiste Aula
@@ -1029,8 +997,6 @@ src/
 │   │   ├── members/
 │   │   │   ├── page.tsx          # Member list
 │   │   │   └── [id]/page.tsx     # Member details
-│   │   ├── ai/
-│   │   │   └── generate/page.tsx # AI wizard
 │   │   ├── settings/page.tsx     # Settings
 │   │   └── layout.tsx            # Admin layout (light, sidebar)
 │   ├── api/                      # Route Handlers
@@ -1055,9 +1021,8 @@ src/
 │   │   ├── client.ts             # Browser Supabase client
 │   │   ├── server.ts             # Server Supabase client
 │   │   └── middleware.ts         # Supabase middleware helper
-│   ├── api/
-│   │   ├── claude.ts             # Claude API client
-│   │   └── gemini.ts             # Gemini API client
+│   ├── ai/
+│   │   └── gemini-client.ts      # Gemini API client (banner generation)
 │   └── utils/
 │       ├── cn.ts                 # className merge (clsx + twMerge)
 │       └── format.ts             # Formatters (date, duration, etc.)
@@ -1222,7 +1187,6 @@ src/app/api/
 ├── progress/
 │   └── [lessonId]/route.ts      # POST (mark complete)
 ├── ai/
-│   ├── generate-structure/route.ts  # POST (Claude API)
 │   └── generate-banner/route.ts     # POST (Gemini API)
 └── webhooks/
     └── payt/route.ts            # POST (incoming webhook)
@@ -1426,7 +1390,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # AI APIs
-ANTHROPIC_API_KEY=your-claude-api-key
 GEMINI_API_KEY=your-gemini-api-key
 
 # Webhook Security
@@ -1748,7 +1711,7 @@ export function apiSuccess<T>(data: T, status = 200) {
 - API response time por endpoint
 - Webhook processing time and success rate
 - Database query performance (Supabase Dashboard)
-- AI generation time (Claude + Gemini)
+- AI banner generation time (Gemini)
 - Error rate per endpoint
 
 ---
@@ -1773,7 +1736,7 @@ export function apiSuccess<T>(data: T, status = 200) {
 
 ### Known Gaps (non-blocking)
 
-1. **Circuit breaker para AI APIs:** Claude/Gemini não possuem fallback circuit breaker. Implementar timeout + retry com backoff + mensagem graceful no AI wizard.
+1. **Circuit breaker para AI APIs:** Gemini não possui fallback circuit breaker. Implementar timeout + retry com backoff + mensagem graceful na geração de banners.
 2. **Payt webhook docs:** Documentação da Payt a confirmar com stakeholder antes do Epic 4. Implementar webhook handler genérico e adaptar após confirmação.
 3. **Backup strategy:** Supabase free tier não inclui backups automáticos. Considerar pg_dump manual ou upgrade para Pro plan antes de produção.
 4. **Encryption at rest:** Gerenciado pelo Supabase (AES-256 por padrão). Nenhuma ação necessária.

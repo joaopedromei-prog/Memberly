@@ -29,7 +29,7 @@ export async function POST(
   }
 
   // Verify member has access to the product containing this lesson
-  const productId = (lesson.module as { id: string; product_id: string }).product_id;
+  const productId = (lesson.module as unknown as { id: string; product_id: string }).product_id;
   const { data: access } = await supabase
     .from('member_access')
     .select('id')

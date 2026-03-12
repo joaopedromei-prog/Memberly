@@ -13,17 +13,16 @@
 ### Goals
 
 - Eliminar a dependência de plataformas terceiras (Cademi, Astron Members) para hospedagem de cursos e mentorias da The Scalers
-- Criar uma ferramenta interna que permita gerar áreas de membros completas via IA com poucos inputs (módulos, banners, descrições)
+- Fornecer ao admin ferramentas eficientes de criação manual de conteúdo com suporte a rich text, duplicação, bulk upload e geração de banners via IA
 - Entregar uma experiência Netflix-like para membros de 30-80 anos com baixa familiaridade digital
 - Integrar com gateway Payt para liberação automática de acesso por produto via webhook
 - Suportar 10.000 membros ativos no MVP com arquitetura escalável para 1M no futuro
-- Reduzir o tempo de criação de uma área de membros de horas para menos de 10 minutos
 
 ### Background Context
 
 A The Scalers é uma empresa de marketing digital especializada em infoprodutos e estratégias de direct response para experts do nicho de saúde, vendendo cursos, mentorias e acompanhamentos digitais. Atualmente depende de plataformas SaaS como Cademi e Astron Members para hospedar conteúdo, enfrentando custos crescentes, customização limitada e processo manual de criação.
 
-Nenhum concorrente no mercado brasileiro oferece geração automatizada de áreas de membros via IA — o Memberly seria first-mover neste diferencial. A equipe de desenvolvimento é enxuta (1 pessoa + IA), o que torna a automação via IA não apenas um diferencial mas uma necessidade operacional. O público-alvo dos membros (30-80 anos, brasileiros comuns) exige uma interface extremamente simples e acessível.
+A equipe de desenvolvimento é enxuta (1 pessoa + IA), o que torna ferramentas eficientes de criação de conteúdo uma necessidade operacional. O público-alvo dos membros (30-80 anos, brasileiros comuns) exige uma interface extremamente simples e acessível.
 
 ### Change Log
 
@@ -48,11 +47,15 @@ Nenhum concorrente no mercado brasileiro oferece geração automatizada de área
 - **FR9:** O sistema deve exibir uma **interface Netflix-like** para membros: catálogo visual com banners horizontais por categoria/produto, cards de módulos, navegação por poucos cliques
 - **FR10:** O sistema deve permitir que membros **comentem** nas aulas, com exibição cronológica dos comentários e possibilidade de resposta pelo admin
 - **FR11:** O sistema deve fornecer ao admin um **painel de gestão de membros** com lista de membros, busca, filtro por produto, visualização de status de acesso, e possibilidade de adicionar/remover acesso manualmente
-- **FR12:** O sistema deve oferecer **geração de área de membros via IA**: a partir de inputs mínimos (nome do produto, tema, público-alvo, quantidade de módulos), a IA gera automaticamente a estrutura completa de módulos, títulos de aulas, descrições e sugestões de banners
-- **FR13:** O admin deve poder **editar manualmente** todo conteúdo gerado pela IA (títulos, descrições, banners, estrutura) antes ou depois da publicação
+- **FR12:** O sistema deve permitir **geração de imagens de banner** para produtos e módulos via IA (Gemini API), com opção de upload manual como alternativa
+- **FR13:** O admin deve poder **criar e editar todo conteúdo manualmente** com editor rich text para descrições, duplicação de módulos/aulas, e status rascunho/publicado por aula
 - **FR14:** O sistema deve exibir **progresso do membro** por produto/módulo (aulas assistidas / total de aulas) de forma visual na interface Netflix-like
 - **FR15:** O sistema deve fornecer um **dashboard admin** com visão geral: total de membros, produtos ativos, membros recentes, e acesso rápido às ações principais
 - **FR16:** O sistema deve suportar **domínio customizado** (a ser configurado futuramente) para a área de membros
+- **FR17:** O sistema deve permitir **upload de arquivos de qualquer tipo** nas aulas (não apenas PDF)
+- **FR18:** O sistema deve exibir **preview do produto como o membro verá**, acessível pelo admin
+- **FR19:** O sistema deve suportar **bulk upload de múltiplos arquivos** por aula
+- **FR20:** O sistema deve exibir no painel admin a **% de completude do curso** (aulas com vídeo, descrição, publicadas)
 
 ### Non-Functional Requirements
 
@@ -68,7 +71,7 @@ Nenhum concorrente no mercado brasileiro oferece geração automatizada de área
 - **NFR10:** A arquitetura deve ser **stateless** para permitir escalabilidade horizontal futura
 - **NFR11:** A interface do membro deve priorizar **acessibilidade básica**: fontes legíveis (mín. 16px), contraste adequado, botões com área de toque mínima de 44px, navegação por teclado
 - **NFR12:** O endpoint de webhook deve validar **assinatura/token** da Payt para evitar requisições fraudulentas
-- **NFR13:** O sistema de IA deve usar a **Claude API** (Anthropic) para geração de conteúdo textual e estrutural, e a **Gemini API** (Google) para geração de imagens de banners
+- **NFR13:** O sistema de IA deve usar a **Gemini API** (Google) para geração de banners
 
 ---
 
@@ -80,12 +83,12 @@ Uma experiência dividida em duas interfaces completamente distintas:
 
 1. **Área de Membros (público):** Visual Netflix-like — escuro, imersivo, visual-first. Banners hero grandes, carrosséis horizontais de conteúdo, navegação mínima. O membro nunca deve se sentir perdido. Projetado para pessoas de 30-80 anos que podem não ser tech-savvy: fontes grandes, poucos botões, ações óbvias.
 
-2. **Painel Admin (interno):** Clean, funcional, orientado a tarefas. Dashboard com métricas rápidas, CRUD eficiente para produtos/módulos/aulas, wizard de criação via IA com preview. O admin é tech-savvy em marketing, então a interface pode ser mais densa — mas sempre clara.
+2. **Painel Admin (interno):** Clean, funcional, orientado a tarefas. Dashboard com métricas rápidas, CRUD eficiente para produtos/módulos/aulas com editor rich text, duplicação e bulk upload. O admin é tech-savvy em marketing, então a interface pode ser mais densa — mas sempre clara.
 
 ### Key Interaction Paradigms
 
 - **Browse & Watch:** O membro navega visualmente (Netflix-style) e clica para assistir. Máximo 3 cliques até o conteúdo: Home → Produto → Aula
-- **Create & Manage:** O admin usa formulários e wizards para criar conteúdo. A IA reduz friction preenchendo campos automaticamente
+- **Create & Manage:** O admin usa formulários com rich text, duplicação e bulk upload para criar conteúdo de forma eficiente
 - **Progressive Disclosure:** Mostrar apenas o essencial; detalhes sob demanda (expandir descrições, ver mais módulos)
 - **Visual Feedback:** Progresso visual (barras, checkmarks em aulas concluídas), estados de loading, confirmações de ação
 
@@ -100,7 +103,7 @@ Uma experiência dividida em duas interfaces completamente distintas:
 
 **Painel Admin:**
 6. **Dashboard** — Métricas gerais, atalhos para ações frequentes
-7. **Gestão de Produtos** — Lista, criar/editar produto, wizard IA
+7. **Gestão de Produtos** — Lista, criar/editar produto, geração de banners via IA
 8. **Gestão de Módulos/Aulas** — CRUD com drag-and-drop para reordenação
 9. **Gestão de Membros** — Lista, busca, filtros, atribuição de acesso
 10. **Configurações** — Webhook, domínio, preferências gerais
@@ -120,7 +123,7 @@ Uma experiência dividida em duas interfaces completamente distintas:
 - A ser definido pelo stakeholder — inicialmente usar paleta neutra/escura (Netflix-inspired) para área de membros
 - Painel admin com tema claro e profissional
 - Logo e identidade visual da The Scalers a serem incorporados posteriormente
-- Banners e imagens de módulos serão gerados via IA ou uploadados pelo admin
+- Banners e imagens de módulos podem ser gerados via IA (Gemini) ou uploadados manualmente pelo admin
 
 ### Target Devices and Platforms
 
@@ -150,7 +153,6 @@ packages/
 
 - **Frontend + API:** Next.js no Vercel (App Router + Route Handlers)
 - **Database + Auth + Storage:** Supabase (PostgreSQL, Auth, Storage)
-- **IA (texto):** Claude API (Anthropic) para geração de estrutura — chamada via Route Handlers do Next.js
 - **IA (imagens):** Gemini API (Google) para geração de banners — chamada via Route Handlers do Next.js
 - **Webhook:** Next.js Route Handler dedicado para receber webhooks da Payt
 
@@ -188,7 +190,8 @@ packages/
 | 2 | **Gestão de Conteúdo (Admin)** | Permitir que o admin crie e gerencie produtos, módulos e aulas com suporte a vídeo embed e PDFs |
 | 3 | **Área de Membros Netflix-like** | Implementar a interface de consumo de conteúdo com navegação visual, player de vídeo e comentários |
 | 4 | **Integração Payt & Controle de Acesso** | Receber webhooks da Payt, liberar acesso automático por produto e implementar controle de visibilidade |
-| 5 | **Geração via IA** | Permitir que o admin gere estrutura completa de área de membros (módulos, aulas, descrições, banners) via IA com poucos inputs |
+| 5 | **Geração de Banners via IA** | Permitir que o admin gere imagens de banner para produtos e módulos via Gemini API, com upload manual como alternativa |
+| 6 | **Rebranding & Ferramentas Avançadas de Conteúdo** | Remover AI Wizard/Claude API, adicionar rich text, duplicação, bulk upload, preview de produto e barra de progresso do curso no admin |
 
 ---
 
@@ -522,59 +525,73 @@ packages/
 
 ---
 
-### Epic 5: Geração via IA
+### Epic 5: Geração de Banners via IA
 
-**Goal:** Implementar o diferencial core do Memberly — a capacidade de gerar uma área de membros completa (estrutura de módulos, títulos de aulas, descrições, sugestões de banners) a partir de poucos inputs do admin via IA (Claude API). Ao final deste epic, o admin pode criar um curso completo em minutos em vez de horas.
+**Goal:** Permitir que o admin gere imagens de banner para produtos e módulos via Gemini API (Google), com upload manual como alternativa. Ao final deste epic, o admin pode gerar banners visuais diretamente nos formulários de criação/edição de produtos e módulos.
 
-#### Story 5.1: Wizard de Geração IA (Input & Generation)
-
-> Como **admin**,
-> quero informar poucos dados sobre um produto e ter a IA gerando a estrutura completa,
-> para que eu crie áreas de membros em minutos.
-
-**Acceptance Criteria:**
-
-1. Botão "Criar com IA" na página de produtos abre wizard modal/page com steps
-2. Step 1 — Inputs: nome do produto, tema/nicho, público-alvo (texto livre), número de módulos desejado (slider 1-20), tom do conteúdo (formal/informal)
-3. Step 2 — Geração: loading state com mensagem "Gerando sua área de membros..." (chamada à Claude API via Route Handler)
-4. Claude API recebe prompt estruturado com os inputs e retorna JSON com: estrutura de módulos (título, descrição), aulas por módulo (título, descrição), sugestões de banners (texto descritivo para geração posterior ou referência)
-5. Step 3 — Preview: exibir a estrutura gerada em formato visual (árvore de módulos e aulas) para revisão
-6. Botão "Aprovar e Criar" salva toda a estrutura no banco (produto + módulos + aulas) de uma vez
-7. Botão "Regenerar" permite nova geração com os mesmos ou novos inputs
-8. Tratamento de erro: se a API falhar, exibir mensagem amigável com opção de retry
-
----
-
-#### Story 5.2: Edição Pós-Geração
+#### Story 5.1: Geração de Banners via IA nos Formulários
 
 > Como **admin**,
-> quero editar qualquer conteúdo gerado pela IA antes ou depois de publicar,
-> para que eu tenha controle total sobre o resultado final.
-
-**Acceptance Criteria:**
-
-1. Na tela de preview (Step 3 do wizard), cada item (módulo, aula) é editável inline: clicar no título/descrição permite editar diretamente
-2. Possibilidade de adicionar/remover módulos e aulas na preview antes de salvar
-3. Reordenação por drag-and-drop na preview
-4. Após salvar, toda a estrutura é editável normalmente via CRUD do Epic 2
-5. Indicador visual de "gerado por IA" nos itens (badge sutil) que desaparece após edição manual
-
----
-
-#### Story 5.3: Geração de Banners via IA (Stretch Goal)
-
-> Como **admin**,
-> quero que a IA gere imagens de banner para módulos e produtos,
+> quero gerar imagens de banner para produtos e módulos via IA,
 > para que a área de membros tenha visual completo sem necessidade de designer.
 
 **Acceptance Criteria:**
 
-1. No wizard de geração, opção "Gerar banners automaticamente" (checkbox, default: off)
-2. Se ativado: para cada módulo e para o produto, enviar descrição de banner para **Gemini API (Google)** com capacidade nativa de geração de imagens
-3. Banners gerados exibidos no preview para aprovação
-4. Admin pode aceitar, rejeitar (usar placeholder) ou regenerar cada banner individualmente
-5. Banners aprovados são salvos no Supabase Storage e vinculados aos respectivos módulos/produto
-6. Se API de imagem indisponível ou feature desabilitada: fallback para banners placeholder com gradient + texto
+1. Nos formulários de criação/edição de produto e módulo, botão "Gerar Banner com IA" ao lado do upload manual
+2. Ao clicar, enviar descrição do produto/módulo para **Gemini API (Google)** com capacidade nativa de geração de imagens
+3. Banner gerado exibido como preview para aprovação
+4. Admin pode aceitar, rejeitar (manter atual ou placeholder) ou regenerar o banner
+5. Banners aprovados são salvos no Supabase Storage e vinculados ao respectivo produto/módulo
+6. Se API de imagem indisponível: fallback para banners placeholder com gradient + texto
+7. Loading state durante geração com mensagem "Gerando banner..."
+
+---
+
+### Epic 6: Rebranding & Ferramentas Avançadas de Conteúdo
+
+**Goal:** Remover o AI Wizard e a dependência da Claude API, e adicionar ferramentas avançadas de criação manual de conteúdo: rich text editor, duplicação de módulos/aulas, status rascunho/publicado por aula, preview do produto como membro, reestruturação do layout do player, bulk upload de arquivos e barra de progresso do curso no admin.
+
+#### Story 6.1: Remoção do AI Wizard & Claude API
+
+> Como **desenvolvedor**,
+> quero remover o AI Wizard e toda integração com a Claude API,
+> para que o sistema não dependa mais dessa API e o código fique mais enxuto.
+
+#### Story 6.2: Rich Text Editor nas Descrições de Aulas
+
+> Como **admin**,
+> quero editar descrições de aulas com um editor rich text,
+> para que eu possa formatar o conteúdo com negrito, itálico, listas e links.
+
+#### Story 6.3: Geração de Banners Standalone nos Formulários
+
+> Como **admin**,
+> quero gerar banners via IA diretamente nos formulários de produto e módulo,
+> para que eu não precise de um wizard separado para obter banners visuais.
+
+#### Story 6.4: Status Rascunho/Publicado por Aula + Duplicar Módulo/Aula
+
+> Como **admin**,
+> quero controlar o status de publicação de cada aula individualmente e duplicar módulos/aulas,
+> para que eu tenha mais controle e agilidade na gestão de conteúdo.
+
+#### Story 6.5: Preview do Produto como Membro (Admin)
+
+> Como **admin**,
+> quero visualizar o produto exatamente como o membro verá,
+> para que eu possa validar a experiência antes de publicar.
+
+#### Story 6.6: Reestruturar Layout do Player de Aula
+
+> Como **membro**,
+> quero um layout de player de aula mais organizado e funcional,
+> para que minha experiência de aprendizado seja melhor.
+
+#### Story 6.7: Bulk Upload + Barra de Progresso do Curso no Admin
+
+> Como **admin**,
+> quero fazer upload de múltiplos arquivos por aula e ver a % de completude do curso,
+> para que eu gerencie o conteúdo de forma mais eficiente.
 
 ---
 
@@ -592,7 +609,7 @@ packages/
 
 ### Architect Prompt
 
-> `@architect`: Revise o PRD do Memberly em `docs/prd.md`, com foco na Seção 4 (Technical Assumptions) e nos 5 epics. Crie a arquitetura técnica: schema detalhado do banco, estrutura de pastas do Next.js App Router, definição de API routes, integração Supabase (Auth, RLS, Storage), fluxo do webhook Payt, e integração com Claude API para geração via IA. Valide as decisões técnicas do PRD e proponha ajustes se necessário.
+> `@architect`: Revise o PRD do Memberly em `docs/prd.md`, com foco na Seção 4 (Technical Assumptions) e nos 6 epics. Crie a arquitetura técnica: schema detalhado do banco, estrutura de pastas do Next.js App Router, definição de API routes, integração Supabase (Auth, RLS, Storage), fluxo do webhook Payt, e integração com Gemini API para geração de banners. Valide as decisões técnicas do PRD e proponha ajustes se necessário.
 
 ---
 

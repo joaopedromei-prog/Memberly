@@ -1,5 +1,12 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
+export interface LessonAttachment {
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -102,8 +109,10 @@ export interface Database {
           video_provider: 'youtube' | 'pandavideo';
           video_id: string;
           pdf_url: string | null;
+          attachments: LessonAttachment[];
           sort_order: number;
           duration_minutes: number | null;
+          is_published: boolean;
           created_at: string;
         };
         Insert: {
@@ -114,8 +123,10 @@ export interface Database {
           video_provider: 'youtube' | 'pandavideo';
           video_id?: string;
           pdf_url?: string | null;
+          attachments?: LessonAttachment[];
           sort_order?: number;
           duration_minutes?: number | null;
+          is_published?: boolean;
           created_at?: string;
         };
         Update: {
@@ -126,8 +137,10 @@ export interface Database {
           video_provider?: 'youtube' | 'pandavideo';
           video_id?: string;
           pdf_url?: string | null;
+          attachments?: LessonAttachment[];
           sort_order?: number;
           duration_minutes?: number | null;
+          is_published?: boolean;
           created_at?: string;
         };
       };

@@ -2,11 +2,13 @@ import { redirect } from 'next/navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ProductHero } from '@/components/member/ProductHero';
 import { ModuleList, type ModuleWithProgress } from '@/components/member/ModuleList';
+import { PreviewBanner } from '@/components/member/PreviewBanner';
 
 interface Lesson {
   id: string;
   title: string;
   sort_order: number;
+  is_published: boolean;
 }
 
 interface Module {
@@ -29,10 +31,13 @@ interface Product {
 
 export default async function ProductPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }) {
   const { slug } = await params;
+  const { preview } = await searchParams;
   const supabase = await createServerSupabaseClient();
 
   const {
@@ -43,33 +48,52 @@ export default async function ProductPage({
     redirect('/login');
   }
 
-  // Check member access + fetch product with modules and lessons
-  const { data: accessCheck } = await supabase
-    .from('member_access')
-    .select('product_id, products!inner(slug)')
-    .eq('profile_id', user.id);
+  // Check if admin preview mode
+  const isPreviewMode = preview === 'true';
+  let isAdminPreview = false;
 
-  const { data: product } = await supabase
+  if (isPreviewMode) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    isAdminPreview = profile?.role === 'admin';
+  }
+
+  // Fetch product — in admin preview, skip is_published filter
+  let productQuery = supabase
     .from('products')
     .select(`
       id, title, description, banner_url, slug,
       modules (
         id, title, description, banner_url, sort_order,
-        lessons ( id, title, sort_order )
+        lessons ( id, title, sort_order, is_published )
       )
     `)
-    .eq('slug', slug)
-    .eq('is_published', true)
-    .single<Product>();
+    .eq('slug', slug);
+
+  if (!isAdminPreview) {
+    productQuery = productQuery.eq('is_published', true);
+  }
+
+  const { data: product } = await productQuery.single<Product>();
 
   if (!product) {
     redirect('/?message=produto-nao-encontrado');
   }
 
-  // Verify access
-  const hasAccess = accessCheck?.some((a) => a.product_id === product.id);
-  if (!hasAccess) {
-    redirect('/?message=sem-acesso');
+  // Verify access (skip for admin preview)
+  if (!isAdminPreview) {
+    const { data: accessCheck } = await supabase
+      .from('member_access')
+      .select('product_id, products!inner(slug)')
+      .eq('profile_id', user.id);
+
+    const hasAccess = accessCheck?.some((a) => a.product_id === product.id);
+    if (!hasAccess) {
+      redirect('/?message=sem-acesso');
+    }
   }
 
   // Fetch member progress
@@ -89,10 +113,13 @@ export default async function ProductPage({
   );
 
   // Calculate progress per module and find next lesson URLs
+  // In admin preview, include draft lessons with badge
+  const previewSuffix = isAdminPreview ? '?preview=true' : '';
+
   const modulesWithProgress: ModuleWithProgress[] = sortedModules.map((mod) => {
-    const sortedLessons = [...mod.lessons].sort(
-      (a, b) => a.sort_order - b.sort_order
-    );
+    const sortedLessons = [...mod.lessons]
+      .filter((l) => isAdminPreview || l.is_published)
+      .sort((a, b) => a.sort_order - b.sort_order);
     const totalLessons = sortedLessons.length;
     const completedLessons = sortedLessons.filter((l) =>
       completedLessonIds.has(l.id)
@@ -102,13 +129,18 @@ export default async function ProductPage({
       (l) => !completedLessonIds.has(l.id)
     );
     const nextLessonUrl = nextLesson
-      ? `/products/${slug}/lessons/${nextLesson.id}`
+      ? `/products/${slug}/lessons/${nextLesson.id}${previewSuffix}`
       : null;
 
     return {
       id: mod.id,
       title: mod.title,
-      description: mod.description,
+      description: isAdminPreview
+        ? mod.description +
+          (mod.lessons.some((l) => !l.is_published)
+            ? ` (${mod.lessons.filter((l) => !l.is_published).length} rascunho(s))`
+            : '')
+        : mod.description,
       bannerUrl: mod.banner_url,
       sortOrder: mod.sort_order,
       totalLessons,
@@ -127,6 +159,7 @@ export default async function ProductPage({
   // Find the global next uncompleted lesson
   const allLessons = sortedModules.flatMap((mod) =>
     [...mod.lessons]
+      .filter((l) => isAdminPreview || l.is_published)
       .sort((a, b) => a.sort_order - b.sort_order)
       .map((l) => ({ ...l, moduleId: mod.id }))
   );
@@ -134,20 +167,25 @@ export default async function ProductPage({
     (l) => !completedLessonIds.has(l.id)
   );
   const nextLessonUrl = nextGlobalLesson
-    ? `/products/${slug}/lessons/${nextGlobalLesson.id}`
+    ? `/products/${slug}/lessons/${nextGlobalLesson.id}${previewSuffix}`
     : null;
 
   return (
     <div className="pb-12">
-      <ProductHero
-        title={product.title}
-        description={product.description}
-        bannerUrl={product.banner_url}
-        totalModules={totalModules}
-        totalLessons={totalLessons}
-        nextLessonUrl={nextLessonUrl}
-      />
-      <ModuleList modules={modulesWithProgress} productSlug={slug} />
+      {isAdminPreview && (
+        <PreviewBanner adminUrl={`/admin/products/${product.id}`} />
+      )}
+      <div className={isAdminPreview ? 'pt-11' : ''}>
+        <ProductHero
+          title={product.title}
+          description={product.description}
+          bannerUrl={product.banner_url}
+          totalModules={totalModules}
+          totalLessons={totalLessons}
+          nextLessonUrl={nextLessonUrl}
+        />
+        <ModuleList modules={modulesWithProgress} productSlug={slug} />
+      </div>
     </div>
   );
 }

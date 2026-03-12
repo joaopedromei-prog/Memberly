@@ -27,8 +27,10 @@ export async function PATCH(
   }
   if (body.video_id !== undefined) updates.video_id = body.video_id;
   if (body.pdf_url !== undefined) updates.pdf_url = body.pdf_url;
+  if (body.attachments !== undefined) updates.attachments = body.attachments;
   if (body.duration_minutes !== undefined)
     updates.duration_minutes = body.duration_minutes;
+  if (body.is_published !== undefined) updates.is_published = body.is_published;
 
   if (Object.keys(updates).length === 0) {
     return apiError('VALIDATION_ERROR', 'No fields to update', 400);

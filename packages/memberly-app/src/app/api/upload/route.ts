@@ -6,10 +6,11 @@ const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const PDF_TYPES = ['application/pdf'];
 const IMAGE_MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const PDF_MAX_SIZE = 20 * 1024 * 1024; // 20MB
+const ATTACHMENT_MAX_SIZE = 50 * 1024 * 1024; // 50MB
 
 interface BucketConfig {
   bucket: string;
-  allowedTypes: string[];
+  allowedTypes: string[] | null; // null = any type
   maxSize: number;
   typeErrorMessage: string;
   sizeErrorMessage: string;
@@ -29,6 +30,13 @@ const BUCKET_CONFIGS: Record<string, BucketConfig> = {
     maxSize: PDF_MAX_SIZE,
     typeErrorMessage: 'File must be a PDF',
     sizeErrorMessage: 'File must be under 20MB',
+  },
+  attachments: {
+    bucket: 'attachments',
+    allowedTypes: null,
+    maxSize: ATTACHMENT_MAX_SIZE,
+    typeErrorMessage: '',
+    sizeErrorMessage: 'File must be under 50MB',
   },
 };
 
@@ -54,7 +62,7 @@ export async function POST(request: NextRequest) {
     return apiError('VALIDATION_ERROR', `Invalid bucket: ${bucketName}`, 400);
   }
 
-  if (!config.allowedTypes.includes(file.type)) {
+  if (config.allowedTypes && !config.allowedTypes.includes(file.type)) {
     return apiError('INVALID_FILE_TYPE', config.typeErrorMessage, 400);
   }
 
