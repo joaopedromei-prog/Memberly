@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ProgressBar } from '@/components/ui/ProgressBar';
 
 interface ModuleCardProps {
   moduleId: string;
@@ -16,10 +15,8 @@ interface ModuleCardProps {
 }
 
 export function ModuleCard({
-  moduleId,
   productSlug,
   title,
-  description,
   bannerUrl,
   totalLessons,
   completedLessons,
@@ -33,46 +30,52 @@ export function ModuleCard({
     <Link href={href}>
       <article
         aria-label={`Módulo: ${title} — ${completedLessons}/${totalLessons} aulas concluídas`}
-        className="group flex flex-col overflow-hidden rounded-lg border border-transparent bg-dark-surface transition-all duration-150 ease-out hover:border-dark-border hover:bg-dark-card hover:shadow-lg sm:flex-row"
+        className="group relative aspect-[5/7] overflow-hidden rounded-lg transition-transform duration-300 hover:scale-105 hover:ring-1 hover:ring-white/20"
       >
-        {/* Banner */}
-        <div className="relative aspect-video w-full flex-shrink-0 sm:aspect-video sm:w-[150px] lg:w-[200px]">
-          {bannerUrl ? (
-            <Image
-              src={bannerUrl}
-              alt={`Banner do módulo ${title}`}
-              fill
-              className="object-cover"
-              sizes="(max-width: 639px) 100vw, (max-width: 1023px) 150px, 200px"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center bg-dark-card text-neutral-500">
-              <span className="text-2xl">📚</span>
+        {/* Banner Image */}
+        {bannerUrl ? (
+          <Image
+            src={bannerUrl}
+            alt={`Banner do módulo ${title}`}
+            fill
+            className="object-cover"
+            sizes="(max-width: 639px) 100vw, (max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center bg-gradient-to-br from-neutral-800 to-neutral-900">
+            <span className="text-center text-lg font-bold text-neutral-400">{title}</span>
+          </div>
+        )}
+
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+        {/* Completed badge */}
+        {isComplete && (
+          <div className="absolute right-2 top-2">
+            <span className="rounded bg-[#46D369] px-2 py-0.5 text-xs font-semibold text-black">
+              ✓ Concluído
+            </span>
+          </div>
+        )}
+
+        {/* Title + progress at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <h3 className="text-lg font-bold text-white drop-shadow-md">
+            {title}
+          </h3>
+          <p className="mt-1 text-xs text-neutral-300">
+            {completedLessons}/{totalLessons} aulas
+          </p>
+          {/* Thin progress bar */}
+          {totalLessons > 0 && (
+            <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-white/20">
+              <div
+                className="h-full rounded-full bg-[#46D369] transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              />
             </div>
           )}
-        </div>
-
-        {/* Content */}
-        <div className="flex min-w-0 flex-1 flex-col justify-center p-4">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-lg font-semibold text-white lg:text-xl">
-              {title}
-            </h3>
-            {isComplete && (
-              <span className="flex-shrink-0 rounded bg-[#46D369] px-2 py-0.5 text-xs font-semibold text-black">
-                ✓ Concluído
-              </span>
-            )}
-          </div>
-          {description && (
-            <p className="mt-1 line-clamp-2 text-sm text-neutral-400">
-              {description}
-            </p>
-          )}
-          <p className="mt-2 text-xs text-neutral-500">
-            {totalLessons} aulas · {completedLessons}/{totalLessons} concluídas
-          </p>
-          <ProgressBar value={progress} className="mt-2" />
         </div>
       </article>
     </Link>

@@ -23,7 +23,7 @@ export function ModuleList({ modules, productSlug }: ModuleListProps) {
         <h2 className="text-xl font-semibold text-white sm:text-2xl">
           Módulos
         </h2>
-        <div className="mt-4 flex flex-col gap-4">
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
           {modules.map((mod) => (
             <ModuleCard
               key={mod.id}

@@ -29,24 +29,21 @@ describe('ModuleCard', () => {
     expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('Fundamentos do React');
   });
 
-  it('renders description', () => {
+  it('renders lesson progress text', () => {
     render(<ModuleCard {...defaultProps} />);
-    expect(screen.getByText('Aprenda os conceitos básicos do React')).toBeInTheDocument();
+    expect(screen.getByText('3/8 aulas')).toBeInTheDocument();
   });
 
-  it('renders lesson count and progress', () => {
+  it('renders banner image with fill', () => {
     render(<ModuleCard {...defaultProps} />);
-    expect(screen.getByText('8 aulas · 3/8 concluídas')).toBeInTheDocument();
+    const img = screen.getByAltText('Banner do módulo Fundamentos do React');
+    expect(img).toBeInTheDocument();
   });
 
-  it('renders banner image', () => {
-    render(<ModuleCard {...defaultProps} />);
-    expect(screen.getByAltText('Banner do módulo Fundamentos do React')).toBeInTheDocument();
-  });
-
-  it('renders emoji fallback when no banner', () => {
+  it('renders placeholder with title when no banner', () => {
     render(<ModuleCard {...defaultProps} bannerUrl={null} />);
-    expect(screen.getByText('📚')).toBeInTheDocument();
+    const placeholders = screen.getAllByText('Fundamentos do React');
+    expect(placeholders.length).toBeGreaterThanOrEqual(2);
   });
 
   it('shows completed badge when 100% progress', () => {
@@ -65,7 +62,7 @@ describe('ModuleCard', () => {
     expect(link).toHaveAttribute('href', '/products/curso-react/lessons/les-4');
   });
 
-  it('links to module page when no nextLessonUrl', () => {
+  it('links to product page when no nextLessonUrl', () => {
     render(<ModuleCard {...defaultProps} nextLessonUrl={null} />);
     const link = screen.getByRole('link');
     expect(link).toHaveAttribute('href', '/products/curso-react');
@@ -80,8 +77,28 @@ describe('ModuleCard', () => {
     );
   });
 
-  it('handles zero lessons correctly', () => {
-    render(<ModuleCard {...defaultProps} totalLessons={0} completedLessons={0} />);
-    expect(screen.getByText('0 aulas · 0/0 concluídas')).toBeInTheDocument();
+  it('renders portrait aspect ratio card', () => {
+    render(<ModuleCard {...defaultProps} />);
+    const article = screen.getByRole('article');
+    expect(article.className).toContain('aspect-[5/7]');
+  });
+
+  it('renders hover scale effect', () => {
+    render(<ModuleCard {...defaultProps} />);
+    const article = screen.getByRole('article');
+    expect(article.className).toContain('hover:scale-105');
+  });
+
+  it('renders thin progress bar when lessons exist', () => {
+    const { container } = render(<ModuleCard {...defaultProps} />);
+    const progressBar = container.querySelector('[style*="width: 38%"]');
+    expect(progressBar).toBeInTheDocument();
+  });
+
+  it('does not render progress bar when zero lessons', () => {
+    const { container } = render(<ModuleCard {...defaultProps} totalLessons={0} completedLessons={0} />);
+    expect(screen.getByText('0/0 aulas')).toBeInTheDocument();
+    const progressBar = container.querySelector('.bg-\\[\\#46D369\\]');
+    expect(progressBar).not.toBeInTheDocument();
   });
 });
