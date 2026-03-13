@@ -1,135 +1,112 @@
 'use client';
 
-import type { Lesson } from '@/types/database';
+import { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
+import { LayoutGrid, PlayCircle, Clock } from 'lucide-react';
 
 interface CourseCompletionWidgetProps {
-  lessons: Lesson[];
+  totalModules: number;
+  totalLessons: number;
+  publishedLessons: number;
+  totalDurationMinutes: number;
 }
 
-function ProgressBar({
-  label,
-  current,
-  total,
-}: {
-  label: string;
-  current: number;
-  total: number;
-}) {
-  const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+function CircularProgress({ percentage }: { percentage: number }) {
+  const [offset, setOffset] = useState(100);
+  const radius = 24;
+  const circumference = 2 * Math.PI * radius;
 
-  let barColor = 'bg-red-500';
-  let textColor = 'text-red-700';
-  let bgColor = 'bg-red-100';
-  if (percentage > 80) {
-    barColor = 'bg-green-500';
-    textColor = 'text-green-700';
-    bgColor = 'bg-green-100';
-  } else if (percentage >= 50) {
-    barColor = 'bg-yellow-500';
-    textColor = 'text-yellow-700';
-    bgColor = 'bg-yellow-100';
-  }
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setOffset(100 - percentage);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [percentage]);
 
   return (
-    <div>
-      <div className="mb-1 flex items-center justify-between">
-        <span className="text-sm text-gray-700">{label}</span>
-        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${bgColor} ${textColor}`}>
-          {current}/{total}
-        </span>
-      </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
-        <div
-          className={`h-full rounded-full transition-all duration-500 ${barColor}`}
-          style={{ width: `${percentage}%` }}
+    <div className="relative w-14 h-14 flex items-center justify-center">
+      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 56 56">
+        <circle
+          cx="28"
+          cy="28"
+          r={radius}
+          className="stroke-slate-200"
+          strokeWidth="3"
+          fill="none"
         />
-      </div>
+        <circle
+          cx="28"
+          cy="28"
+          r={radius}
+          className="stroke-emerald-500 transition-all duration-1000 ease-out"
+          strokeWidth="3"
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={(circumference * offset) / 100}
+          strokeLinecap="round"
+        />
+      </svg>
+      <span className="absolute text-sm font-bold text-slate-900">{percentage}%</span>
     </div>
   );
 }
 
-export function CourseCompletionWidget({ lessons }: CourseCompletionWidgetProps) {
-  const total = lessons.length;
+function formatDuration(minutes: number): string {
+  if (minutes === 0) return '0min';
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins}min`;
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h ${mins}min`;
+}
 
-  if (total === 0) {
-    return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900">Progresso do Curso</h3>
-        <p className="mt-2 text-sm text-gray-500">
-          Nenhuma aula criada ainda.
-        </p>
-      </div>
-    );
-  }
+export function CourseCompletionWidget({
+  totalModules,
+  totalLessons,
+  publishedLessons,
+  totalDurationMinutes,
+}: CourseCompletionWidgetProps) {
+  const percentage = totalLessons > 0
+    ? Math.round((publishedLessons / totalLessons) * 100)
+    : 0;
 
-  const withVideo = lessons.filter((l) => l.video_id && l.video_id.trim() !== '').length;
-  const withDescription = lessons.filter(
-    (l) => l.description && l.description.trim() !== ''
-  ).length;
-  const published = lessons.filter((l) => l.is_published).length;
-  const withAttachments = lessons.filter(
-    (l) =>
-      (l.attachments && l.attachments.length > 0) ||
-      (l.pdf_url && l.pdf_url.trim() !== '')
-  ).length;
-
-  // Overall completion: average of all metrics
-  const metrics = [withVideo, withDescription, published, withAttachments];
-  const overallPercent = Math.round(
-    (metrics.reduce((sum, m) => sum + m, 0) / (total * metrics.length)) * 100
-  );
-
-  let overallColor = 'text-red-600';
-  let overallBg = 'bg-red-100';
-  if (overallPercent > 80) {
-    overallColor = 'text-green-600';
-    overallBg = 'bg-green-100';
-  } else if (overallPercent >= 50) {
-    overallColor = 'text-yellow-600';
-    overallBg = 'bg-yellow-100';
+  if (totalLessons === 0 && totalModules === 0) {
+    return null;
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Progresso do Curso
-        </h3>
-        <span
-          className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-bold ${overallBg} ${overallColor}`}
-        >
-          {overallPercent}%
-        </span>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.1 }}
+      className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 shadow-sm"
+    >
+      <div className="flex items-center gap-4">
+        <CircularProgress percentage={percentage} />
+        <div>
+          <div className="text-sm font-semibold text-slate-900">{percentage}% concluído</div>
+          <div className="text-xs text-slate-500 mt-0.5">
+            {publishedLessons} de {totalLessons} aulas publicadas
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-4">
-        <ProgressBar
-          label={`Aulas com video`}
-          current={withVideo}
-          total={total}
-        />
-        <ProgressBar
-          label={`Aulas com descricao`}
-          current={withDescription}
-          total={total}
-        />
-        <ProgressBar
-          label={`Aulas publicadas`}
-          current={published}
-          total={total}
-        />
-        <ProgressBar
-          label={`Aulas com arquivos anexos`}
-          current={withAttachments}
-          total={total}
-        />
+      <div className="grid grid-cols-2 md:flex gap-4 md:gap-6">
+        <div className="flex items-center gap-2">
+          <LayoutGrid size={18} className="text-slate-400" />
+          <span className="text-sm text-slate-600">{totalModules} módulos</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <PlayCircle size={18} className="text-slate-400" />
+          <span className="text-sm text-slate-600">{totalLessons} aulas</span>
+        </div>
+        {totalDurationMinutes > 0 && (
+          <div className="flex items-center gap-2 col-span-2 md:col-span-1">
+            <Clock size={18} className="text-slate-400" />
+            <span className="text-sm text-slate-600">{formatDuration(totalDurationMinutes)}</span>
+          </div>
+        )}
       </div>
-
-      <div className="mt-4 border-t border-gray-100 pt-3">
-        <p className="text-xs text-gray-500">
-          {total} aula{total !== 1 ? 's' : ''} no total
-        </p>
-      </div>
-    </div>
+    </motion.div>
   );
 }

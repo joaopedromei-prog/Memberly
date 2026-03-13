@@ -6,8 +6,30 @@ import { findOrCreateMember } from '@/lib/webhooks/member-provisioning';
 import { createWebhookLog, updateWebhookLog } from '@/lib/webhooks/webhook-logger';
 import { lookupInternalProduct } from '@/lib/webhooks/product-lookup';
 import { apiError } from '@/lib/utils/api-response';
+import { webhookLimiter } from '@/lib/utils/rate-limiter';
+
+function getClientIP(request: NextRequest): string {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    request.headers.get('x-real-ip') ??
+    'unknown'
+  );
+}
 
 export async function POST(request: NextRequest) {
+  // Rate limiting (Story 8.10): 30 req/min per IP
+  const clientIP = getClientIP(request);
+  const { allowed, retryAfter } = webhookLimiter.check(clientIP);
+  if (!allowed) {
+    return new NextResponse(JSON.stringify({ error: 'Too many requests' }), {
+      status: 429,
+      headers: {
+        'Content-Type': 'application/json',
+        'Retry-After': String(retryAfter),
+      },
+    });
+  }
+
   const startTime = performance.now();
   const adminClient = createAdminClient();
   let logId: string | null = null;

@@ -1,10 +1,8 @@
 import { notFound } from 'next/navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { ModuleList } from '@/components/admin/ModuleList';
+import { ModuleList, type ModuleListItem } from '@/components/admin/ModuleList';
 import { CourseCompletionWidget } from '@/components/admin/CourseCompletionWidget';
-import type { ModuleWithLessonCount } from '@/types/api';
-import type { Lesson } from '@/types/database';
 
 interface ModulesPageProps {
   params: Promise<{ id: string }>;
@@ -24,20 +22,43 @@ export default async function ModulesPage({ params }: ModulesPageProps) {
     notFound();
   }
 
-  const { data: modules } = await supabase
+  const { data: rawModules } = await supabase
     .from('modules')
-    .select('*, lessons(count)')
+    .select('id, title, description, banner_url, sort_order, product_id, drip_days, created_at, lessons(id, is_published, duration_minutes)')
     .eq('product_id', productId)
     .order('sort_order');
 
-  // Fetch all lessons for course completion widget
-  const { data: allLessons } = await supabase
-    .from('lessons')
-    .select('*')
-    .in(
-      'module_id',
-      (modules ?? []).map((m: ModuleWithLessonCount) => m.id)
-    );
+  interface RawLesson {
+    id: string;
+    is_published: boolean;
+    duration_minutes: number | null;
+  }
+
+  const modules: ModuleListItem[] = (rawModules ?? []).map((m) => {
+    const lessons = (m.lessons ?? []) as RawLesson[];
+    const publishedCount = lessons.filter((l) => l.is_published).length;
+    return {
+      id: m.id,
+      title: m.title,
+      description: m.description,
+      banner_url: m.banner_url,
+      sort_order: m.sort_order,
+      product_id: m.product_id,
+      drip_days: m.drip_days,
+      created_at: m.created_at,
+      lessonCount: lessons.length,
+      publishedCount,
+      draftCount: lessons.length - publishedCount,
+    };
+  });
+
+  // Compute stats for the completion widget
+  const totalLessons = modules.reduce((s, m) => s + m.lessonCount, 0);
+  const publishedLessons = modules.reduce((s, m) => s + m.publishedCount, 0);
+  const totalDurationMinutes = (rawModules ?? []).reduce((s, m) => {
+    const lessons = (m.lessons ?? []) as RawLesson[];
+    return s + lessons.reduce((ls, l) => ls + (l.duration_minutes ?? 0), 0);
+  }, 0);
 
   return (
     <div>
@@ -48,18 +69,15 @@ export default async function ModulesPage({ params }: ModulesPageProps) {
           { label: 'Módulos' },
         ]}
       />
-      <h2 className="mb-6 text-2xl font-bold text-gray-900">
-        Módulos — {product.title}
-      </h2>
 
-      <div className="mb-6">
-        <CourseCompletionWidget lessons={(allLessons as Lesson[]) ?? []} />
-      </div>
-
-      <ModuleList
-        productId={productId}
-        modules={(modules as ModuleWithLessonCount[]) ?? []}
+      <CourseCompletionWidget
+        totalModules={modules.length}
+        totalLessons={totalLessons}
+        publishedLessons={publishedLessons}
+        totalDurationMinutes={totalDurationMinutes}
       />
+
+      <ModuleList productId={productId} modules={modules} />
     </div>
   );
 }

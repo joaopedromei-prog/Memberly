@@ -12,6 +12,7 @@ import type { Lesson, VideoProvider, LessonAttachment } from '@/types/database';
 interface LessonFormProps {
   moduleId: string;
   lesson?: Lesson;
+  moduleDripDays?: number | null;
   onSuccess: () => void;
   onCancel: () => void;
   embedded?: boolean;
@@ -20,6 +21,7 @@ interface LessonFormProps {
 export function LessonForm({
   moduleId,
   lesson,
+  moduleDripDays,
   onSuccess,
   onCancel,
   embedded,
@@ -39,6 +41,9 @@ export function LessonForm({
   );
   const [attachments, setAttachments] = useState<LessonAttachment[]>(
     lesson?.attachments ?? []
+  );
+  const [dripDays, setDripDays] = useState<string>(
+    lesson?.drip_days?.toString() ?? ''
   );
   const [isPublished, setIsPublished] = useState(lesson?.is_published ?? false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,6 +74,7 @@ export function LessonForm({
       video_provider: videoProvider,
       video_id: videoId,
       duration_minutes: durationMinutes ? parseInt(durationMinutes, 10) : null,
+      drip_days: dripDays ? parseInt(dripDays, 10) : null,
       pdf_url: firstPdf?.url ?? null,
       attachments,
       is_published: isPublished,
@@ -208,6 +214,32 @@ export function LessonForm({
             className="mt-1 block w-32 rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             placeholder="Ex: 15"
           />
+        </div>
+
+        <div>
+          <label
+            htmlFor="lesson-drip"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Disponível após X dias da compra
+          </label>
+          <input
+            id="lesson-drip"
+            type="number"
+            min="0"
+            value={dripDays}
+            onChange={(e) => setDripDays(e.target.value)}
+            className="mt-1 block w-32 rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            placeholder="0"
+          />
+          {moduleDripDays != null && moduleDripDays > 0 && (
+            <p className="mt-1 text-xs text-amber-600">
+              Mínimo herdado do módulo: {moduleDripDays} dias
+            </p>
+          )}
+          <p className="mt-1 text-xs text-gray-500">
+            Deixe vazio para usar o valor do módulo pai ou disponibilizar imediatamente.
+          </p>
         </div>
 
         <div>

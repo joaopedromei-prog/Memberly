@@ -18,9 +18,9 @@ describe('ProductCard', () => {
     expect(screen.getByText('Marketing Digital')).toBeInTheDocument();
   });
 
-  it('renders progress bar with label', () => {
+  it('renders progress percentage', () => {
     render(<ProductCard slug="marketing" title="Marketing" bannerUrl={null} progress={45} />);
-    expect(screen.getByText('45%')).toBeInTheDocument();
+    expect(screen.getByText('45% concluído')).toBeInTheDocument();
   });
 
   it('links to product page', () => {
@@ -31,7 +31,7 @@ describe('ProductCard', () => {
 
   it('shows completed badge at 100%', () => {
     render(<ProductCard slug="done" title="Concluído" bannerUrl={null} progress={100} />);
-    expect(screen.getByText('✓ 100%')).toBeInTheDocument();
+    expect(screen.getByText('100%')).toBeInTheDocument();
   });
 
   it('renders banner image when URL provided', () => {
@@ -40,8 +40,9 @@ describe('ProductCard', () => {
     expect(img).toBeInTheDocument();
   });
 
-  it('renders placeholder when no banner', () => {
+  it('renders gradient fallback when no banner', () => {
     const { container } = render(<ProductCard slug="curso" title="Curso" bannerUrl={null} progress={0} />);
-    expect(container.querySelector('.aspect-video')).toBeInTheDocument();
+    const gradientDiv = container.querySelector('[style*="linear-gradient"]');
+    expect(gradientDiv).toBeInTheDocument();
   });
 });

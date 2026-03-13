@@ -30,6 +30,9 @@ export function ModuleForm({
   const [bannerUrl, setBannerUrl] = useState<string | null>(
     module?.banner_url ?? null
   );
+  const [dripDays, setDripDays] = useState<string>(
+    module?.drip_days?.toString() ?? ''
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -48,13 +51,13 @@ export function ModuleForm({
       if (isEditing) {
         await apiRequest(`/api/modules/${module.id}`, {
           method: 'PATCH',
-          body: JSON.stringify({ title, description, banner_url: bannerUrl }),
+          body: JSON.stringify({ title, description, banner_url: bannerUrl, drip_days: dripDays ? parseInt(dripDays, 10) : null }),
         });
         addToast('Módulo atualizado com sucesso', 'success');
       } else {
         await apiRequest(`/api/products/${productId}/modules`, {
           method: 'POST',
-          body: JSON.stringify({ title, description, banner_url: bannerUrl }),
+          body: JSON.stringify({ title, description, banner_url: bannerUrl, drip_days: dripDays ? parseInt(dripDays, 10) : null }),
         });
         addToast('Módulo criado com sucesso', 'success');
       }
@@ -104,6 +107,27 @@ export function ModuleForm({
           className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="Descreva o módulo..."
         />
+      </div>
+
+      <div>
+        <label
+          htmlFor="module-drip"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Disponível após X dias da compra
+        </label>
+        <input
+          id="module-drip"
+          type="number"
+          min="0"
+          value={dripDays}
+          onChange={(e) => setDripDays(e.target.value)}
+          className="mt-1 block w-32 rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          placeholder="0"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Deixe vazio para disponibilizar imediatamente. Aulas herdam este valor como mínimo.
+        </p>
       </div>
 
       <div>

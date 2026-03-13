@@ -39,18 +39,15 @@ export default async function MembersPage({ searchParams }: MembersPageProps) {
   if (profileIdsWithAccess) {
     if (profileIdsWithAccess.length === 0) {
       return (
-        <div>
-          <h1 className="mb-6 text-2xl font-bold text-gray-900">Membros</h1>
-          <MemberList
-            members={[]}
-            products={[]}
-            total={0}
-            page={page}
-            limit={limit}
-            initialSearch={params.search || ''}
-            initialProductId={params.product_id || ''}
-          />
-        </div>
+        <MemberList
+          members={[]}
+          products={[]}
+          total={0}
+          page={page}
+          limit={limit}
+          initialSearch={params.search || ''}
+          initialProductId={params.product_id || ''}
+        />
       );
     }
     query = query.in('id', profileIdsWithAccess);
@@ -62,17 +59,14 @@ export default async function MembersPage({ searchParams }: MembersPageProps) {
   ]);
 
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Membros</h1>
-      <MemberList
-        members={(members as MemberWithAccessCount[]) ?? []}
-        products={(products as ProductWithModuleCount[]) ?? []}
-        total={count ?? 0}
-        page={page}
-        limit={limit}
-        initialSearch={params.search || ''}
-        initialProductId={params.product_id || ''}
-      />
-    </div>
+    <MemberList
+      members={(members as MemberWithAccessCount[]) ?? []}
+      products={(products as ProductWithModuleCount[]) ?? []}
+      total={count ?? 0}
+      page={page}
+      limit={limit}
+      initialSearch={params.search || ''}
+      initialProductId={params.product_id || ''}
+    />
   );
 }

@@ -54,6 +54,7 @@ describe('LessonForm', () => {
       attachments: [],
       sort_order: 0,
       duration_minutes: 15,
+      drip_days: null,
       is_published: true,
       created_at: '2026-01-01T00:00:00Z',
     };
@@ -127,6 +128,7 @@ describe('LessonForm', () => {
       attachments: [],
       sort_order: 0,
       duration_minutes: null,
+      drip_days: null,
       is_published: false,
       created_at: '2026-01-01T00:00:00Z',
     };

@@ -2,51 +2,183 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { SortableList } from '@/components/ui/SortableList';
+import { Reorder, motion, AnimatePresence, useDragControls } from 'motion/react';
+import {
+  Plus,
+  PlayCircle,
+  Clock,
+  GripVertical,
+  Paperclip,
+  Copy,
+  Pencil,
+  Trash2,
+} from 'lucide-react';
 import { LessonForm } from '@/components/admin/LessonForm';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Button } from '@/components/ui/Button';
 import { apiRequest, ApiRequestError } from '@/lib/utils/api';
 import { useToastStore } from '@/stores/toast-store';
 import type { Lesson } from '@/types/database';
 
 interface LessonListProps {
   moduleId: string;
+  moduleTitle: string;
   lessons: Lesson[];
 }
 
-function ProviderBadge({ provider }: { provider: string }) {
-  if (provider === 'youtube') {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
-        YouTube
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-      Panda
-    </span>
-  );
+function formatDuration(minutes: number): string {
+  if (minutes === 0) return '0min';
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m}min`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}min`;
 }
 
-function PublishBadge({ isPublished }: { isPublished: boolean }) {
-  if (isPublished) {
-    return (
-      <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
-        Publicada
-      </span>
-    );
-  }
+function attachmentCount(lesson: Lesson): number {
+  let count = 0;
+  if (lesson.attachments && lesson.attachments.length > 0) count += lesson.attachments.length;
+  if (lesson.pdf_url) count += 1;
+  return count;
+}
+
+function LessonRow({
+  lesson,
+  index,
+  onToggleStatus,
+  onDuplicate,
+  onEdit,
+  onDelete,
+}: {
+  lesson: Lesson;
+  index: number;
+  onToggleStatus: () => void;
+  onDuplicate: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const dragControls = useDragControls();
+  const attCount = attachmentCount(lesson);
+
   return (
-    <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
-      Rascunho
-    </span>
+    <Reorder.Item
+      value={lesson}
+      id={lesson.id}
+      dragListener={false}
+      dragControls={dragControls}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="group relative flex flex-col md:flex-row md:items-center px-4 py-3.5 border-b border-slate-100 bg-white hover:bg-slate-50 transition-colors cursor-default"
+      whileDrag={{
+        scale: 1.01,
+        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+        zIndex: 50,
+        backgroundColor: '#ffffff',
+      }}
+    >
+      {/* Drag Handle + Index + Title */}
+      <div className="flex items-center w-full md:w-auto md:flex-1 gap-3 mb-3 md:mb-0">
+        <div
+          className="cursor-grab active:cursor-grabbing w-8 h-8 flex items-center justify-center text-slate-300 hover:text-slate-500 transition-colors shrink-0 touch-none"
+          onPointerDown={(e) => dragControls.start(e)}
+        >
+          <GripVertical size={20} />
+        </div>
+
+        <div className="w-7 h-7 rounded-lg bg-slate-100 text-xs font-semibold text-slate-600 flex items-center justify-center shrink-0">
+          {index + 1}
+        </div>
+
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="font-medium text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+            {lesson.title}
+          </span>
+          {attCount > 0 && (
+            <Paperclip size={14} className="text-slate-400 shrink-0" />
+          )}
+        </div>
+      </div>
+
+      {/* Badges & Actions */}
+      <div className="flex items-center justify-between md:justify-end w-full md:w-auto pl-11 md:pl-0 gap-4 md:gap-0">
+        <div className="flex items-center gap-4 md:gap-0 flex-1 md:flex-none">
+          {/* Provider */}
+          <div className="md:w-24 shrink-0">
+            {lesson.video_provider === 'youtube' ? (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 ring-1 ring-inset ring-red-200">
+                YouTube
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                Panda
+              </span>
+            )}
+          </div>
+
+          {/* Duration */}
+          <div className="md:w-20 text-sm text-slate-500 md:text-center shrink-0">
+            {lesson.duration_minutes ? `${lesson.duration_minutes} min` : '—'}
+          </div>
+
+          {/* Status toggle */}
+          <div className="md:w-24 shrink-0">
+            <button
+              onClick={onToggleStatus}
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset transition-opacity hover:opacity-80 ${
+                lesson.is_published
+                  ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+                  : 'bg-slate-100 text-slate-600 ring-slate-200'
+              }`}
+            >
+              {lesson.is_published ? 'Publicada' : 'Rascunho'}
+            </button>
+          </div>
+
+          {/* Drip days */}
+          <div className="hidden lg:block md:w-20 text-center shrink-0">
+            {lesson.drip_days ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
+                {lesson.drip_days} dias
+              </span>
+            ) : (
+              <span className="text-slate-300">&mdash;</span>
+            )}
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="md:w-28 flex items-center justify-end gap-1 shrink-0">
+          <button
+            title="Duplicar"
+            onClick={onDuplicate}
+            className="w-8 h-8 flex items-center justify-center rounded-md text-purple-500 hover:bg-purple-50 transition-colors"
+          >
+            <Copy size={16} />
+          </button>
+          <button
+            title="Editar"
+            onClick={onEdit}
+            className="w-8 h-8 flex items-center justify-center rounded-md text-blue-600 hover:bg-blue-50 transition-colors"
+          >
+            <Pencil size={16} />
+          </button>
+          <button
+            title="Excluir"
+            onClick={onDelete}
+            className="w-8 h-8 flex items-center justify-center rounded-md text-red-500 hover:bg-red-50 transition-colors"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
+    </Reorder.Item>
   );
 }
 
 export function LessonList({
   moduleId,
+  moduleTitle,
   lessons: initialLessons,
 }: LessonListProps) {
   const router = useRouter();
@@ -57,7 +189,12 @@ export function LessonList({
   const [deleteTarget, setDeleteTarget] = useState<Lesson | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const publishedCount = lessons.filter((l) => l.is_published).length;
+  const draftCount = lessons.length - publishedCount;
+  const totalDuration = lessons.reduce((acc, l) => acc + (l.duration_minutes ?? 0), 0);
+
   const handleReorder = async (newItems: Lesson[]) => {
+    setLessons(newItems);
     const items = newItems.map((item, index) => ({
       id: item.id,
       sort_order: index,
@@ -154,94 +291,109 @@ export function LessonList({
     );
   }
 
-  if (lessons.length === 0) {
-    return (
-      <div>
-        <div className="mb-4 flex justify-end">
-          <Button onClick={() => setShowForm(true)}>Nova Aula</Button>
-        </div>
-        <div className="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
-          <p className="text-lg font-medium text-gray-500">
-            Nenhuma aula criada
-          </p>
-          <p className="mt-1 text-sm text-gray-400">
-            Comece adicionando a primeira aula deste módulo.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
-      <div className="mb-4 flex justify-end">
-        <Button onClick={() => setShowForm(true)}>Nova Aula</Button>
-      </div>
+      {/* Page header */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.05 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6"
+      >
+        <h2 className="text-2xl font-bold text-slate-900">
+          Aulas &mdash; {moduleTitle}
+        </h2>
+        <button
+          onClick={() => setShowForm(true)}
+          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-10 px-4 font-medium text-sm transition-colors shadow-sm shrink-0"
+        >
+          <Plus size={18} />
+          Nova Aula
+        </button>
+      </motion.div>
 
-      <SortableList
-        items={lessons}
-        onReorder={handleReorder}
-        renderItem={(lesson, dragHandleProps) => (
-          <div className="mb-2 flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <button
-              type="button"
-              className="cursor-grab touch-none text-gray-400 hover:text-gray-600"
-              aria-label="Arrastar para reordenar"
-              {...dragHandleProps}
-            >
-              ⠿
-            </button>
+      {/* Stats bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="bg-white rounded-xl border border-slate-200 p-4 flex flex-wrap items-center gap-x-6 gap-y-3 mb-5 shadow-sm"
+      >
+        <div className="flex items-center gap-2">
+          <PlayCircle size={20} className="text-slate-400" />
+          <span className="text-sm font-medium text-slate-700">{lessons.length} aulas</span>
+        </div>
+        <div className="hidden sm:block w-px h-5 bg-slate-200" />
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-500" />
+          <span className="text-sm font-medium text-emerald-600">{publishedCount} publicadas</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-amber-500" />
+          <span className="text-sm font-medium text-amber-600">{draftCount} rascunhos</span>
+        </div>
+        <div className="hidden sm:block w-px h-5 bg-slate-200" />
+        <div className="flex items-center gap-2">
+          <Clock size={20} className="text-slate-400" />
+          <span className="text-sm font-medium text-slate-600">{formatDuration(totalDuration)} total</span>
+        </div>
+      </motion.div>
 
-            <div className="flex-1">
-              <p className="font-medium text-gray-900">{lesson.title}</p>
-              <div className="mt-1 flex items-center gap-2">
-                <PublishBadge isPublished={lesson.is_published} />
-                <ProviderBadge provider={lesson.video_provider} />
-                {lesson.duration_minutes && (
-                  <span className="text-xs text-gray-500">
-                    {lesson.duration_minutes} min
-                  </span>
-                )}
-                {lesson.attachments && lesson.attachments.length > 0 && (
-                  <span className="text-xs text-blue-600">
-                    {lesson.attachments.length} arquivo{lesson.attachments.length !== 1 ? 's' : ''}
-                  </span>
-                )}
-                {!lesson.attachments?.length && lesson.pdf_url && (
-                  <span className="text-xs text-blue-600">PDF</span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleTogglePublish(lesson)}
-                className={`text-sm ${lesson.is_published ? 'text-amber-600 hover:text-amber-800' : 'text-green-600 hover:text-green-800'}`}
-              >
-                {lesson.is_published ? 'Despublicar' : 'Publicar'}
-              </button>
-              <button
-                onClick={() => handleDuplicate(lesson)}
-                className="text-sm text-purple-600 hover:text-purple-800"
-              >
-                Duplicar
-              </button>
-              <button
-                onClick={() => setEditingLesson(lesson)}
-                className="text-sm text-blue-600 hover:text-blue-800"
-              >
-                Editar
-              </button>
-              <button
-                onClick={() => setDeleteTarget(lesson)}
-                className="text-sm text-red-600 hover:text-red-800"
-              >
-                Excluir
-              </button>
-            </div>
+      {/* Lesson list */}
+      {lessons.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="py-16 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center bg-white"
+        >
+          <PlayCircle size={48} className="text-slate-300 mb-4" />
+          <h3 className="text-lg font-medium text-slate-500 mb-1">Nenhuma aula criada</h3>
+          <p className="text-sm text-slate-400 mb-4">
+            Comece adicionando a primeira aula deste módulo.
+          </p>
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-10 px-4 font-medium text-sm transition-colors shadow-sm"
+          >
+            Criar Primeira Aula
+          </button>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+          className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm"
+        >
+          {/* Table header (desktop) */}
+          <div className="hidden md:flex items-center bg-slate-50/80 px-4 py-3 border-b border-slate-200">
+            <div className="w-8 shrink-0" />
+            <div className="flex-1 text-xs uppercase font-semibold tracking-wider text-slate-500">Aula</div>
+            <div className="w-24 text-xs uppercase font-semibold tracking-wider text-slate-500">Provedor</div>
+            <div className="w-20 text-xs uppercase font-semibold tracking-wider text-slate-500 text-center">Duração</div>
+            <div className="w-24 text-xs uppercase font-semibold tracking-wider text-slate-500">Status</div>
+            <div className="w-20 hidden lg:block text-xs uppercase font-semibold tracking-wider text-slate-500 text-center">Drip</div>
+            <div className="w-28 text-xs uppercase font-semibold tracking-wider text-slate-500 text-right">Ações</div>
           </div>
-        )}
-      />
+
+          {/* Draggable rows */}
+          <Reorder.Group axis="y" values={lessons} onReorder={handleReorder} className="flex flex-col">
+            <AnimatePresence>
+              {lessons.map((lesson, index) => (
+                <LessonRow
+                  key={lesson.id}
+                  lesson={lesson}
+                  index={index}
+                  onToggleStatus={() => handleTogglePublish(lesson)}
+                  onDuplicate={() => handleDuplicate(lesson)}
+                  onEdit={() => setEditingLesson(lesson)}
+                  onDelete={() => setDeleteTarget(lesson)}
+                />
+              ))}
+            </AnimatePresence>
+          </Reorder.Group>
+        </motion.div>
+      )}
 
       <ConfirmDialog
         open={!!deleteTarget}

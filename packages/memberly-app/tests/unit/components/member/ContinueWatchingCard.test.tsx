@@ -1,14 +1,27 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ContinueWatchingCard } from '@/components/member/ContinueWatchingCard';
+
+vi.mock('next/image', () => ({
+  default: (props: Record<string, unknown>) => <img {...props} />,
+}));
+
+vi.mock('next/link', () => ({
+  default: ({ children, href, ...props }: { children: React.ReactNode; href: string }) => (
+    <a href={href} {...props}>{children}</a>
+  ),
+}));
 
 describe('ContinueWatchingCard', () => {
   const defaultProps = {
     productSlug: 'curso-nutricao',
     productTitle: 'Curso de Nutrição',
     productBannerUrl: null,
-    nextLessonId: 'lesson-3',
-    nextLessonTitle: 'Aula 3: Como Montar seu Prato',
+    targetLessonId: 'lesson-3',
+    targetLessonTitle: 'Aula 3: Como Montar seu Prato',
+    moduleName: 'Módulo 1: Fundamentos',
+    lastWatchedAt: '2026-03-12T10:00:00Z',
+    isContinue: true,
     progressPercent: 45,
   };
 
@@ -17,14 +30,19 @@ describe('ContinueWatchingCard', () => {
     expect(screen.getByText('Curso de Nutrição')).toBeInTheDocument();
   });
 
-  it('renders next lesson title', () => {
+  it('renders "Continue:" label when isContinue is true', () => {
     render(<ContinueWatchingCard {...defaultProps} />);
-    expect(screen.getByText('Aula 3: Como Montar seu Prato')).toBeInTheDocument();
+    expect(screen.getByText('Continue: Aula 3: Como Montar seu Prato')).toBeInTheDocument();
   });
 
-  it('renders progress percentage', () => {
+  it('renders "Próxima:" label when isContinue is false', () => {
+    render(<ContinueWatchingCard {...defaultProps} isContinue={false} />);
+    expect(screen.getByText('Próxima: Aula 3: Como Montar seu Prato')).toBeInTheDocument();
+  });
+
+  it('renders module name', () => {
     render(<ContinueWatchingCard {...defaultProps} />);
-    expect(screen.getByText('45%')).toBeInTheDocument();
+    expect(screen.getByText(/Módulo 1: Fundamentos/)).toBeInTheDocument();
   });
 
   it('links to correct lesson URL', () => {
@@ -36,8 +54,15 @@ describe('ContinueWatchingCard', () => {
     );
   });
 
-  it('renders placeholder when no banner', () => {
-    render(<ContinueWatchingCard {...defaultProps} />);
-    expect(screen.getByText('🎬')).toBeInTheDocument();
+  it('renders gradient fallback when no banner', () => {
+    const { container } = render(<ContinueWatchingCard {...defaultProps} />);
+    const gradientDiv = container.querySelector('[style*="linear-gradient"]');
+    expect(gradientDiv).toBeInTheDocument();
+  });
+
+  it('renders banner image when URL provided', () => {
+    render(<ContinueWatchingCard {...defaultProps} productBannerUrl="/img.jpg" />);
+    const img = screen.getByAltText('Curso de Nutrição');
+    expect(img).toBeInTheDocument();
   });
 });

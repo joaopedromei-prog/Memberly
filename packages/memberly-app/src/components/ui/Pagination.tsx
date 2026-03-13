@@ -1,5 +1,6 @@
 'use client';
 
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 interface PaginationProps {
@@ -15,8 +16,8 @@ export function Pagination({ page, totalPages, totalItems, onPageChange }: Pagin
   const pages = getPageNumbers(page, totalPages);
 
   return (
-    <div className="flex items-center justify-between">
-      <p className="text-sm text-gray-500">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p className="text-sm text-slate-500">
         {totalItems} {totalItems === 1 ? 'resultado' : 'resultados'}
       </p>
 
@@ -25,19 +26,21 @@ export function Pagination({ page, totalPages, totalItems, onPageChange }: Pagin
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-50"
+          className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Página anterior"
         >
-          Anterior
+          <ChevronLeft className="w-4 h-4" />
         </button>
-        <span className="text-sm text-gray-600">
+        <span className="text-sm text-slate-600">
           {page} de {totalPages}
         </span>
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-50"
+          className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Próxima página"
         >
-          Próxima
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
@@ -46,14 +49,14 @@ export function Pagination({ page, totalPages, totalItems, onPageChange }: Pagin
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-50"
+          className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Página anterior"
         >
-          ‹
+          <ChevronLeft className="w-4 h-4" />
         </button>
         {pages.map((p, i) =>
           p === '...' ? (
-            <span key={`ellipsis-${i}`} className="px-2 text-gray-400">
+            <span key={`ellipsis-${i}`} className="w-9 h-9 flex items-center justify-center text-slate-500">
               …
             </span>
           ) : (
@@ -61,10 +64,10 @@ export function Pagination({ page, totalPages, totalItems, onPageChange }: Pagin
               key={p}
               onClick={() => onPageChange(p as number)}
               className={cn(
-                'rounded-lg px-3 py-1.5 text-sm',
+                'w-9 h-9 flex items-center justify-center rounded-lg text-sm',
                 p === page
-                  ? 'bg-blue-600 text-white'
-                  : 'border border-gray-300 hover:bg-gray-50'
+                  ? 'bg-blue-600 text-white font-medium shadow-sm'
+                  : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shadow-sm'
               )}
             >
               {p}
@@ -74,10 +77,10 @@ export function Pagination({ page, totalPages, totalItems, onPageChange }: Pagin
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-50"
+          className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Próxima página"
         >
-          ›
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </div>

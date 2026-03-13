@@ -25,6 +25,14 @@ vi.mock('@/lib/supabase/client', () => ({
   }),
 }));
 
+function getEmailInput() {
+  return screen.getByLabelText('Email');
+}
+
+function getPasswordInput() {
+  return screen.getByLabelText('Senha');
+}
+
 describe('LoginPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -33,8 +41,8 @@ describe('LoginPage', () => {
   it('renders login form with email, password, and submit button', () => {
     render(<LoginPage />);
 
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/senha/i)).toBeInTheDocument();
+    expect(getEmailInput()).toBeInTheDocument();
+    expect(getPasswordInput()).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument();
   });
 
@@ -54,8 +62,8 @@ describe('LoginPage', () => {
 
     render(<LoginPage />);
 
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@test.com' } });
-    fireEvent.change(screen.getByLabelText(/senha/i), { target: { value: 'wrongpass' } });
+    fireEvent.change(getEmailInput(), { target: { value: 'test@test.com' } });
+    fireEvent.change(getPasswordInput(), { target: { value: 'wrongpass' } });
     fireEvent.click(screen.getByRole('button', { name: /entrar/i }));
 
     await waitFor(() => {
@@ -72,8 +80,8 @@ describe('LoginPage', () => {
 
     render(<LoginPage />);
 
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'member@test.com' } });
-    fireEvent.change(screen.getByLabelText(/senha/i), { target: { value: 'password123' } });
+    fireEvent.change(getEmailInput(), { target: { value: 'member@test.com' } });
+    fireEvent.change(getPasswordInput(), { target: { value: 'password123' } });
     fireEvent.click(screen.getByRole('button', { name: /entrar/i }));
 
     await waitFor(() => {
@@ -90,8 +98,8 @@ describe('LoginPage', () => {
 
     render(<LoginPage />);
 
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'admin@test.com' } });
-    fireEvent.change(screen.getByLabelText(/senha/i), { target: { value: 'password123' } });
+    fireEvent.change(getEmailInput(), { target: { value: 'admin@test.com' } });
+    fireEvent.change(getPasswordInput(), { target: { value: 'password123' } });
     fireEvent.click(screen.getByRole('button', { name: /entrar/i }));
 
     await waitFor(() => {
@@ -106,8 +114,8 @@ describe('LoginPage', () => {
 
     render(<LoginPage />);
 
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@test.com' } });
-    fireEvent.change(screen.getByLabelText(/senha/i), { target: { value: 'pass' } });
+    fireEvent.change(getEmailInput(), { target: { value: 'test@test.com' } });
+    fireEvent.change(getPasswordInput(), { target: { value: 'pass' } });
     fireEvent.click(screen.getByRole('button', { name: /entrar/i }));
 
     expect(screen.getByText(/carregando/i)).toBeInTheDocument();

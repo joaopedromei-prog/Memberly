@@ -51,6 +51,7 @@ export interface ModuleWithLessonCount {
   description: string;
   banner_url: string | null;
   sort_order: number;
+  drip_days: number | null;
   created_at: string;
   lessons: { count: number }[];
 }
@@ -119,6 +120,7 @@ export interface ModuleWithLessons {
   description: string;
   banner_url: string | null;
   sort_order: number;
+  drip_days: number | null;
   created_at: string;
   lessons: import('@/types/database').Lesson[];
 }

@@ -52,11 +52,9 @@ export default async function LessonsPage({ params }: LessonsPageProps) {
           { label: 'Aulas' },
         ]}
       />
-      <h2 className="mb-6 text-2xl font-bold text-gray-900">
-        Aulas — {module.title}
-      </h2>
       <LessonList
         moduleId={moduleId}
+        moduleTitle={module.title}
         lessons={(lessons as Lesson[]) ?? []}
       />
     </div>

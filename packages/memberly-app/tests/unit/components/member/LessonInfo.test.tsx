@@ -22,6 +22,7 @@ const defaultProps = {
   durationMinutes: 15 as number | null,
   pdfUrl: null as string | null,
   isCompleted: false,
+  isBookmarked: false,
   breadcrumbs: [
     { label: 'Home', href: '/' },
     { label: 'React', href: '/products/react' },

@@ -15,10 +15,9 @@ describe('LessonNavigation', () => {
     expect(nextLink.closest('a')).toHaveAttribute('href', '/products/react/lessons/les-2');
   });
 
-  it('disables prev button when no previous lesson', () => {
+  it('does not render prev link when no previous lesson', () => {
     render(<LessonNavigation prevLessonUrl={null} nextLessonUrl="/products/react/lessons/les-2" />);
-    const prevBtn = screen.getByLabelText('Aula anterior');
-    expect(prevBtn).toBeDisabled();
+    expect(screen.queryByLabelText('Aula anterior')).not.toBeInTheDocument();
   });
 
   it('renders prev link when available', () => {
@@ -27,9 +26,21 @@ describe('LessonNavigation', () => {
     expect(prevLink.closest('a')).toHaveAttribute('href', '/products/react/lessons/les-0');
   });
 
-  it('disables next button when no next lesson', () => {
+  it('does not render next link when no next lesson', () => {
     render(<LessonNavigation prevLessonUrl={null} nextLessonUrl={null} />);
-    const nextBtn = screen.getByLabelText('Próxima aula');
-    expect(nextBtn).toBeDisabled();
+    expect(screen.queryByLabelText('Próxima aula')).not.toBeInTheDocument();
+  });
+
+  it('renders prev and next lesson titles when provided', () => {
+    render(
+      <LessonNavigation
+        prevLessonUrl="/products/react/lessons/les-0"
+        nextLessonUrl="/products/react/lessons/les-2"
+        prevLessonTitle="Introdução"
+        nextLessonTitle="Componentes"
+      />
+    );
+    expect(screen.getByText('Introdução')).toBeInTheDocument();
+    expect(screen.getByText('Componentes')).toBeInTheDocument();
   });
 });

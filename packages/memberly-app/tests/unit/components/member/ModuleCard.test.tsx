@@ -40,20 +40,20 @@ describe('ModuleCard', () => {
     expect(img).toBeInTheDocument();
   });
 
-  it('renders placeholder with title when no banner', () => {
-    render(<ModuleCard {...defaultProps} bannerUrl={null} />);
-    const placeholders = screen.getAllByText('Fundamentos do React');
-    expect(placeholders.length).toBeGreaterThanOrEqual(2);
+  it('renders gradient fallback when no banner', () => {
+    const { container } = render(<ModuleCard {...defaultProps} bannerUrl={null} />);
+    const gradient = container.querySelector('[class*="bg-gradient-to-br"]');
+    expect(gradient).toBeInTheDocument();
   });
 
   it('shows completed badge when 100% progress', () => {
     render(<ModuleCard {...defaultProps} completedLessons={8} />);
-    expect(screen.getByText('✓ Concluído')).toBeInTheDocument();
+    expect(screen.getByText('Concluído')).toBeInTheDocument();
   });
 
   it('does not show completed badge when not 100%', () => {
     render(<ModuleCard {...defaultProps} />);
-    expect(screen.queryByText('✓ Concluído')).not.toBeInTheDocument();
+    expect(screen.queryByText('Concluído')).not.toBeInTheDocument();
   });
 
   it('links to next lesson URL when provided', () => {
@@ -89,9 +89,9 @@ describe('ModuleCard', () => {
     expect(article.className).toContain('hover:scale-105');
   });
 
-  it('renders thin progress bar when lessons exist', () => {
+  it('renders progress bar when lessons exist', () => {
     const { container } = render(<ModuleCard {...defaultProps} />);
-    const progressBar = container.querySelector('[style*="width: 38%"]');
+    const progressBar = container.querySelector('.bg-\\[\\#46D369\\]');
     expect(progressBar).toBeInTheDocument();
   });
 

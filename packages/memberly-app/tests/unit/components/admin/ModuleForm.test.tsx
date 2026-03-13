@@ -39,6 +39,7 @@ describe('ModuleForm', () => {
       description: 'A description',
       banner_url: null,
       sort_order: 0,
+      drip_days: null,
       created_at: '2026-01-01T00:00:00Z',
     };
 
@@ -107,6 +108,7 @@ describe('ModuleForm', () => {
       description: '',
       banner_url: null,
       sort_order: 0,
+      drip_days: null,
       created_at: '2026-01-01T00:00:00Z',
     };
 

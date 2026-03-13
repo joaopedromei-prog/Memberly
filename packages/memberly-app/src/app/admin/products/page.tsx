@@ -1,30 +1,34 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { ProductList } from '@/components/admin/ProductList';
-import type { ProductWithModuleCount } from '@/types/api';
+import { ProductList, type ProductListItem } from '@/components/admin/ProductList';
 
 export default async function ProductsPage() {
   const supabase = await createServerSupabaseClient();
 
-  const { data: products } = await supabase
+  const { data: rawProducts } = await supabase
     .from('products')
-    .select('*, modules(count)')
+    .select('id, title, description, banner_url, slug, is_published, sort_order, created_at, modules(id, lessons(count))')
     .order('sort_order');
+
+  const products: ProductListItem[] = (rawProducts ?? []).map((p) => ({
+    id: p.id,
+    title: p.title,
+    slug: p.slug,
+    banner_url: p.banner_url,
+    is_published: p.is_published,
+    created_at: p.created_at,
+    moduleCount: p.modules?.length ?? 0,
+    lessonCount:
+      p.modules?.reduce(
+        (sum: number, m: { id: string; lessons: { count: number }[] }) =>
+          sum + (m.lessons?.[0]?.count ?? 0),
+        0
+      ) ?? 0,
+  }));
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Produtos</h2>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/admin/products/new"
-            className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Novo Produto
-          </Link>
-        </div>
-      </div>
-      <ProductList products={(products as ProductWithModuleCount[]) ?? []} />
+      <ProductList products={products} />
     </div>
   );
 }

@@ -6,6 +6,12 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
 }));
 
+vi.mock('next/link', () => ({
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
+}));
+
 vi.mock('@/lib/utils/api', () => ({
   apiRequest: vi.fn().mockResolvedValue({}),
 }));
@@ -53,34 +59,43 @@ describe('MemberDetail', () => {
 
   it('renders member profile information', () => {
     render(
-      <MemberDetail profile={mockProfile} access={mockAccess} allProducts={mockAllProducts} />
+      <MemberDetail profile={mockProfile} email="joao@email.com" access={mockAccess} allProducts={mockAllProducts} />
     );
 
-    expect(screen.getByText('João Silva')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('João Silva');
     expect(screen.getByText('member')).toBeInTheDocument();
   });
 
-  it('renders initial letter when no avatar', () => {
+  it('renders initials when no avatar', () => {
     render(
-      <MemberDetail profile={mockProfile} access={mockAccess} allProducts={mockAllProducts} />
+      <MemberDetail profile={mockProfile} email={null} access={mockAccess} allProducts={mockAllProducts} />
     );
 
-    expect(screen.getByText('J')).toBeInTheDocument();
+    expect(screen.getByText('JS')).toBeInTheDocument();
+  });
+
+  it('renders email with copy button', () => {
+    render(
+      <MemberDetail profile={mockProfile} email="joao@email.com" access={mockAccess} allProducts={mockAllProducts} />
+    );
+
+    expect(screen.getByText('joao@email.com')).toBeInTheDocument();
+    expect(screen.getByLabelText('Copiar email')).toBeInTheDocument();
   });
 
   it('renders access list with products', () => {
     render(
-      <MemberDetail profile={mockProfile} access={mockAccess} allProducts={mockAllProducts} />
+      <MemberDetail profile={mockProfile} email={null} access={mockAccess} allProducts={mockAllProducts} />
     );
 
     expect(screen.getByText('Curso React')).toBeInTheDocument();
     expect(screen.getByText('Curso Node')).toBeInTheDocument();
-    expect(screen.getByText('Produtos com Acesso (2)')).toBeInTheDocument();
+    expect(screen.getByText('(2)')).toBeInTheDocument();
   });
 
   it('renders granted_by badges', () => {
     render(
-      <MemberDetail profile={mockProfile} access={mockAccess} allProducts={mockAllProducts} />
+      <MemberDetail profile={mockProfile} email={null} access={mockAccess} allProducts={mockAllProducts} />
     );
 
     expect(screen.getByText('webhook')).toBeInTheDocument();
@@ -89,7 +104,7 @@ describe('MemberDetail', () => {
 
   it('renders remove buttons for each access', () => {
     render(
-      <MemberDetail profile={mockProfile} access={mockAccess} allProducts={mockAllProducts} />
+      <MemberDetail profile={mockProfile} email={null} access={mockAccess} allProducts={mockAllProducts} />
     );
 
     const removeButtons = screen.getAllByText('Remover');
@@ -98,7 +113,7 @@ describe('MemberDetail', () => {
 
   it('shows confirm dialog when remove is clicked', () => {
     render(
-      <MemberDetail profile={mockProfile} access={mockAccess} allProducts={mockAllProducts} />
+      <MemberDetail profile={mockProfile} email={null} access={mockAccess} allProducts={mockAllProducts} />
     );
 
     const removeButtons = screen.getAllByText('Remover');
@@ -109,18 +124,40 @@ describe('MemberDetail', () => {
 
   it('renders grant access button', () => {
     render(
-      <MemberDetail profile={mockProfile} access={mockAccess} allProducts={mockAllProducts} />
+      <MemberDetail profile={mockProfile} email={null} access={mockAccess} allProducts={mockAllProducts} />
     );
 
-    expect(screen.getByText('Atribuir Acesso')).toBeInTheDocument();
+    expect(screen.getAllByText('Atribuir Acesso').length).toBeGreaterThanOrEqual(1);
   });
 
   it('opens grant modal when button is clicked', () => {
     render(
-      <MemberDetail profile={mockProfile} access={mockAccess} allProducts={mockAllProducts} />
+      <MemberDetail profile={mockProfile} email={null} access={mockAccess} allProducts={mockAllProducts} />
     );
 
-    fireEvent.click(screen.getByText('Atribuir Acesso'));
+    const buttons = screen.getAllByText('Atribuir Acesso');
+    fireEvent.click(buttons[0]);
     expect(screen.getByText('Selecione um produto para liberar acesso ao membro.')).toBeInTheDocument();
+  });
+
+  it('renders breadcrumb navigation', () => {
+    render(
+      <MemberDetail profile={mockProfile} email={null} access={mockAccess} allProducts={mockAllProducts} />
+    );
+
+    expect(screen.getByText('Membros')).toBeInTheDocument();
+    const membrosLink = screen.getByText('Membros').closest('a');
+    expect(membrosLink).toHaveAttribute('href', '/admin/members');
+  });
+
+  it('renders quick stats and actions sidebar', () => {
+    render(
+      <MemberDetail profile={mockProfile} email={null} access={mockAccess} allProducts={mockAllProducts} />
+    );
+
+    expect(screen.getByText('Resumo')).toBeInTheDocument();
+    expect(screen.getByText('Ações')).toBeInTheDocument();
+    expect(screen.getByText('Atribuir Acesso a Produto')).toBeInTheDocument();
+    expect(screen.getByText('Remover Membro')).toBeInTheDocument();
   });
 });

@@ -7,6 +7,8 @@ import { LessonNavigation } from '@/components/member/LessonNavigation';
 import { LessonSidebar, type SidebarLesson } from '@/components/member/LessonSidebar';
 import { CommentSection } from '@/components/shared/CommentSection';
 import { PreviewBanner } from '@/components/member/PreviewBanner';
+import { WatchTracker } from '@/components/member/WatchTracker';
+import { isDripUnlocked, getEffectiveDripDays } from '@/lib/utils/drip';
 import type { LessonAttachment } from '@/types/database';
 
 interface LessonRow {
@@ -15,6 +17,7 @@ interface LessonRow {
   sort_order: number;
   duration_minutes: number | null;
   is_published: boolean;
+  drip_days: number | null;
 }
 
 interface LessonDetail {
@@ -27,10 +30,12 @@ interface LessonDetail {
   attachments: LessonAttachment[] | null;
   sort_order: number;
   duration_minutes: number | null;
+  drip_days: number | null;
   module: {
     id: string;
     title: string;
     product_id: string;
+    drip_days: number | null;
     product: { id: string; title: string; slug: string };
     lessons: LessonRow[];
   };
@@ -73,11 +78,11 @@ export default async function LessonPage({
     .from('lessons')
     .select(`
       id, title, description, video_provider, video_id, pdf_url, attachments,
-      sort_order, duration_minutes,
+      sort_order, duration_minutes, drip_days,
       module:modules!inner (
-        id, title, product_id,
+        id, title, product_id, drip_days,
         product:products!inner ( id, title, slug ),
-        lessons ( id, title, sort_order, duration_minutes, is_published )
+        lessons ( id, title, sort_order, duration_minutes, is_published, drip_days )
       )
     `)
     .eq('id', lessonId)
@@ -87,17 +92,26 @@ export default async function LessonPage({
     redirect('/?message=aula-nao-encontrada');
   }
 
-  // Verify member access (skip for admin preview)
+  // Verify member access and get granted_at (skip for admin preview)
+  let grantedAt: string | null = null;
+
   if (!isAdminPreview) {
     const { data: access } = await supabase
       .from('member_access')
-      .select('id')
+      .select('id, granted_at')
       .eq('profile_id', user.id)
       .eq('product_id', lesson.module.product_id)
       .maybeSingle();
 
     if (!access) {
       redirect('/?message=sem-acesso');
+    }
+    grantedAt = access.granted_at;
+
+    // Check drip lock for current lesson
+    const effectiveDrip = getEffectiveDripDays(lesson.module.drip_days, lesson.drip_days);
+    if (effectiveDrip > 0 && grantedAt && !isDripUnlocked(grantedAt, effectiveDrip)) {
+      redirect(`/products/${slug}?drip=blocked`);
     }
   }
 
@@ -112,6 +126,16 @@ export default async function LessonPage({
   const completedLessonIds = new Set(
     (progressData || []).filter((p) => p.completed).map((p) => p.lesson_id)
   );
+
+  // Check if lesson is bookmarked
+  const { data: bookmarkData } = await supabase
+    .from('lesson_bookmarks')
+    .select('id')
+    .eq('profile_id', user.id)
+    .eq('lesson_id', lessonId)
+    .maybeSingle();
+
+  const isBookmarked = !!bookmarkData;
 
   // Sort module lessons by sort_order (in admin preview, include drafts)
   const previewSuffix = isAdminPreview ? '?preview=true' : '';
@@ -132,13 +156,21 @@ export default async function LessonPage({
     ? `/products/${slug}/lessons/${nextLesson.id}${previewSuffix}`
     : null;
 
-  // Build sidebar lessons (show draft badge in preview)
-  const sidebarLessons: SidebarLesson[] = sortedLessons.map((l) => ({
-    id: l.id,
-    title: isAdminPreview && !l.is_published ? `${l.title} [Rascunho]` : l.title,
-    durationMinutes: l.duration_minutes,
-    completed: completedLessonIds.has(l.id),
-  }));
+  // Build sidebar lessons (show draft badge in preview, lock badge for drip)
+  const sidebarLessons: SidebarLesson[] = sortedLessons.map((l) => {
+    const effectiveDrip = getEffectiveDripDays(lesson.module.drip_days, l.drip_days);
+    const locked = !isAdminPreview && grantedAt && effectiveDrip > 0
+      ? !isDripUnlocked(grantedAt, effectiveDrip)
+      : false;
+
+    return {
+      id: l.id,
+      title: isAdminPreview && !l.is_published ? `${l.title} [Rascunho]` : l.title,
+      durationMinutes: l.duration_minutes,
+      completed: completedLessonIds.has(l.id),
+      isLocked: locked,
+    };
+  });
 
   const completedCount = sidebarLessons.filter((l) => l.completed).length;
 
@@ -155,6 +187,7 @@ export default async function LessonPage({
 
   return (
     <div>
+      {!isAdminPreview && <WatchTracker lessonId={lessonId} />}
       {isAdminPreview && (
         <PreviewBanner adminUrl={`/admin/products/${lesson.module.product.id}`} />
       )}
@@ -176,6 +209,7 @@ export default async function LessonPage({
               pdfUrl={lesson.pdf_url}
               attachments={lesson.attachments ?? []}
               isCompleted={completedLessonIds.has(lesson.id)}
+              isBookmarked={isBookmarked}
               breadcrumbs={breadcrumbs}
             />
           }
@@ -186,6 +220,8 @@ export default async function LessonPage({
             <LessonNavigation
               prevLessonUrl={prevLessonUrl}
               nextLessonUrl={nextLessonUrl}
+              prevLessonTitle={prevLesson ? prevLesson.title : null}
+              nextLessonTitle={nextLesson ? nextLesson.title : null}
             />
           }
           sidebar={

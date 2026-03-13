@@ -3,12 +3,14 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ProductHero } from '@/components/member/ProductHero';
 import { ModuleList, type ModuleWithProgress } from '@/components/member/ModuleList';
 import { PreviewBanner } from '@/components/member/PreviewBanner';
+import { isDripUnlocked, getEffectiveDripDays } from '@/lib/utils/drip';
 
 interface Lesson {
   id: string;
   title: string;
   sort_order: number;
   is_published: boolean;
+  drip_days: number | null;
 }
 
 interface Module {
@@ -17,6 +19,7 @@ interface Module {
   description: string;
   banner_url: string | null;
   sort_order: number;
+  drip_days: number | null;
   lessons: Lesson[];
 }
 
@@ -67,8 +70,8 @@ export default async function ProductPage({
     .select(`
       id, title, description, banner_url, slug,
       modules (
-        id, title, description, banner_url, sort_order,
-        lessons ( id, title, sort_order, is_published )
+        id, title, description, banner_url, sort_order, drip_days,
+        lessons ( id, title, sort_order, is_published, drip_days )
       )
     `)
     .eq('slug', slug);
@@ -83,17 +86,21 @@ export default async function ProductPage({
     redirect('/?message=produto-nao-encontrado');
   }
 
-  // Verify access (skip for admin preview)
-  if (!isAdminPreview) {
-    const { data: accessCheck } = await supabase
-      .from('member_access')
-      .select('product_id, products!inner(slug)')
-      .eq('profile_id', user.id);
+  // Verify access and get granted_at (skip for admin preview)
+  let grantedAt: string | null = null;
 
-    const hasAccess = accessCheck?.some((a) => a.product_id === product.id);
-    if (!hasAccess) {
+  if (!isAdminPreview) {
+    const { data: accessData } = await supabase
+      .from('member_access')
+      .select('product_id, granted_at')
+      .eq('profile_id', user.id)
+      .eq('product_id', product.id)
+      .maybeSingle();
+
+    if (!accessData) {
       redirect('/?message=sem-acesso');
     }
+    grantedAt = accessData.granted_at;
   }
 
   // Fetch member progress
@@ -113,7 +120,6 @@ export default async function ProductPage({
   );
 
   // Calculate progress per module and find next lesson URLs
-  // In admin preview, include draft lessons with badge
   const previewSuffix = isAdminPreview ? '?preview=true' : '';
 
   const modulesWithProgress: ModuleWithProgress[] = sortedModules.map((mod) => {
@@ -124,6 +130,14 @@ export default async function ProductPage({
     const completedLessons = sortedLessons.filter((l) =>
       completedLessonIds.has(l.id)
     ).length;
+
+    // Drip check for module
+    const moduleDripDays = mod.drip_days;
+    const isModuleLocked = !isAdminPreview && grantedAt
+      ? !isDripUnlocked(grantedAt, moduleDripDays)
+      : false;
+
+    const effectiveDrip = getEffectiveDripDays(moduleDripDays, null);
 
     const nextLesson = sortedLessons.find(
       (l) => !completedLessonIds.has(l.id)
@@ -146,6 +160,8 @@ export default async function ProductPage({
       totalLessons,
       completedLessons,
       nextLessonUrl,
+      isLocked: isModuleLocked,
+      effectiveDripDays: effectiveDrip,
     };
   });
 
@@ -153,6 +169,10 @@ export default async function ProductPage({
   const totalModules = modulesWithProgress.length;
   const totalLessons = modulesWithProgress.reduce(
     (sum, m) => sum + m.totalLessons,
+    0
+  );
+  const totalCompleted = modulesWithProgress.reduce(
+    (sum, m) => sum + m.completedLessons,
     0
   );
 
@@ -183,8 +203,13 @@ export default async function ProductPage({
           totalModules={totalModules}
           totalLessons={totalLessons}
           nextLessonUrl={nextLessonUrl}
+          completedLessons={totalCompleted}
         />
-        <ModuleList modules={modulesWithProgress} productSlug={slug} />
+        <ModuleList
+          modules={modulesWithProgress}
+          productSlug={slug}
+          grantedAt={grantedAt}
+        />
       </div>
     </div>
   );

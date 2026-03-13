@@ -31,5 +31,24 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
 
   const moduleList = (modules as ModuleWithLessons[]) ?? [];
 
-  return <ProductPageClient product={product} modules={moduleList} />;
+  // Fetch member count for this product
+  const { count: memberCount } = await supabase
+    .from('member_access')
+    .select('id', { count: 'exact', head: true })
+    .eq('product_id', id);
+
+  // Count total lessons across all modules
+  const totalLessons = moduleList.reduce(
+    (sum, m) => sum + (m.lessons?.length ?? 0),
+    0
+  );
+
+  return (
+    <ProductPageClient
+      product={product}
+      modules={moduleList}
+      memberCount={memberCount ?? 0}
+      totalLessons={totalLessons}
+    />
+  );
 }

@@ -79,6 +79,7 @@ export interface Database {
           description: string;
           banner_url: string | null;
           sort_order: number;
+          drip_days: number | null;
           created_at: string;
         };
         Insert: {
@@ -88,6 +89,7 @@ export interface Database {
           description?: string;
           banner_url?: string | null;
           sort_order?: number;
+          drip_days?: number | null;
           created_at?: string;
         };
         Update: {
@@ -97,6 +99,7 @@ export interface Database {
           description?: string;
           banner_url?: string | null;
           sort_order?: number;
+          drip_days?: number | null;
           created_at?: string;
         };
       };
@@ -112,6 +115,7 @@ export interface Database {
           attachments: LessonAttachment[];
           sort_order: number;
           duration_minutes: number | null;
+          drip_days: number | null;
           is_published: boolean;
           created_at: string;
         };
@@ -126,6 +130,7 @@ export interface Database {
           attachments?: LessonAttachment[];
           sort_order?: number;
           duration_minutes?: number | null;
+          drip_days?: number | null;
           is_published?: boolean;
           created_at?: string;
         };
@@ -140,6 +145,7 @@ export interface Database {
           attachments?: LessonAttachment[];
           sort_order?: number;
           duration_minutes?: number | null;
+          drip_days?: number | null;
           is_published?: boolean;
           created_at?: string;
         };
@@ -203,6 +209,7 @@ export interface Database {
           lesson_id: string;
           completed: boolean;
           completed_at: string | null;
+          last_watched_at: string | null;
         };
         Insert: {
           id?: string;
@@ -210,6 +217,7 @@ export interface Database {
           lesson_id: string;
           completed?: boolean;
           completed_at?: string | null;
+          last_watched_at?: string | null;
         };
         Update: {
           id?: string;
@@ -217,6 +225,27 @@ export interface Database {
           lesson_id?: string;
           completed?: boolean;
           completed_at?: string | null;
+          last_watched_at?: string | null;
+        };
+      };
+      lesson_bookmarks: {
+        Row: {
+          id: string;
+          profile_id: string;
+          lesson_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          lesson_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          lesson_id?: string;
+          created_at?: string;
         };
       };
       product_mappings: {
@@ -242,9 +271,64 @@ export interface Database {
           created_at?: string;
         };
       };
+      webhook_logs: {
+        Row: {
+          id: string;
+          gateway: string;
+          event_type: string;
+          payload: Record<string, unknown>;
+          status: string;
+          error_message: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          gateway?: string;
+          event_type: string;
+          payload: Record<string, unknown>;
+          status?: string;
+          error_message?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          gateway?: string;
+          event_type?: string;
+          payload?: Record<string, unknown>;
+          status?: string;
+          error_message?: string | null;
+          created_at?: string;
+        };
+      };
+      site_settings: {
+        Row: {
+          key: string;
+          value: Json;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          value: Json;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          value?: Json;
+          updated_at?: string;
+        };
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      is_admin: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      set_user_role: {
+        Args: { user_id: string; new_role: string };
+        Returns: undefined;
+      };
+    };
     Enums: Record<string, never>;
   };
 }
@@ -263,3 +347,4 @@ export type MemberAccess = Database['public']['Tables']['member_access']['Row'];
 export type Comment = Database['public']['Tables']['comments']['Row'];
 export type LessonProgress = Database['public']['Tables']['lesson_progress']['Row'];
 export type ProductMapping = Database['public']['Tables']['product_mappings']['Row'];
+export type LessonBookmark = Database['public']['Tables']['lesson_bookmarks']['Row'];

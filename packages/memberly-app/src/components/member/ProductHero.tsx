@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { motion, useReducedMotion } from 'motion/react';
 
 interface ProductHeroProps {
   title: string;
@@ -11,7 +12,28 @@ interface ProductHeroProps {
   totalModules: number;
   totalLessons: number;
   nextLessonUrl: string | null;
+  completedLessons?: number;
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.3,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: 'easeOut' as const },
+  },
+};
 
 export function ProductHero({
   title,
@@ -20,47 +42,109 @@ export function ProductHero({
   totalModules,
   totalLessons,
   nextLessonUrl,
+  completedLessons = 0,
 }: ProductHeroProps) {
   const [expanded, setExpanded] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+  const progress =
+    totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   return (
     <section className="relative">
       {/* Banner */}
-      <div className="relative aspect-[21/9] w-full overflow-hidden sm:aspect-[3/1]">
+      <div className="relative aspect-[3/2] md:aspect-[16/9] xl:aspect-[21/9] w-full overflow-hidden bg-[#141414]">
         {bannerUrl ? (
-          <Image
-            src={bannerUrl}
-            alt={`Banner do produto ${title}`}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
+          <motion.div
+            className="absolute inset-0"
+            animate={
+              shouldReduceMotion ? { scale: 1 } : { scale: [1, 1.03, 1] }
+            }
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          >
+            <Image
+              src={bannerUrl}
+              alt={`Banner do produto ${title}`}
+              fill
+              className="object-cover"
+              priority
+              sizes="100vw"
+            />
+          </motion.div>
         ) : (
-          <div className="flex h-full items-center justify-center bg-dark-card">
-            <span className="text-6xl">🎬</span>
-          </div>
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]"
+            animate={
+              shouldReduceMotion ? { scale: 1 } : { scale: [1, 1.03, 1] }
+            }
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          >
+            <div className="flex h-full items-center justify-center">
+              <span className="text-6xl">🎬</span>
+            </div>
+          </motion.div>
         )}
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-dark-bg/60 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/60 to-transparent" />
       </div>
 
       {/* Content overlay */}
-      <div className="relative -mt-32 px-4 sm:-mt-40 sm:px-6 lg:px-16">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 -mt-24 md:-mt-36 px-4 sm:px-6 lg:px-16"
+      >
         <div className="mx-auto max-w-7xl">
-          <h1 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
+          <motion.h1
+            variants={itemVariants}
+            className="text-[28px] xl:text-[40px] font-bold text-white leading-tight"
+          >
             {title}
-          </h1>
-          <p className="mt-2 text-sm text-neutral-400">
-            {totalModules} módulos · {totalLessons} aulas
-          </p>
+          </motion.h1>
+
+          <motion.div
+            variants={itemVariants}
+            className="flex items-center gap-2 sm:gap-4 mt-2 flex-wrap"
+          >
+            <span className="text-[14px] text-[#B3B3B3]">
+              {totalModules} módulos · {totalLessons} aulas
+            </span>
+            {completedLessons > 0 && (
+              <>
+                <span className="text-[14px] text-[#737373]">·</span>
+                <span className="text-[14px] text-[#46D369] font-medium">
+                  {progress}% concluído
+                </span>
+                <div className="hidden sm:block w-24 h-1.5 rounded-full bg-[#2A2A2A] overflow-hidden ml-2">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    transition={{
+                      duration: 0.8,
+                      delay: shouldReduceMotion ? 0 : 0.8,
+                      ease: 'easeOut',
+                    }}
+                    className="h-full bg-[#46D369]"
+                  />
+                </div>
+              </>
+            )}
+          </motion.div>
 
           {/* Description with expand/collapse */}
           {description && (
-            <div className="mt-3">
+            <motion.div variants={itemVariants} className="mt-4 max-w-2xl">
               <p
-                className={`text-sm leading-relaxed text-neutral-300 transition-all duration-200 ease-out ${
-                  expanded ? '' : 'line-clamp-3'
+                className={`text-[14px] text-[#B3B3B3] leading-relaxed transition-all duration-200 ease-out ${
+                  expanded ? '' : 'line-clamp-2'
                 }`}
               >
                 {description}
@@ -68,25 +152,27 @@ export function ProductHero({
               {description.length > 150 && (
                 <button
                   onClick={() => setExpanded(!expanded)}
-                  className="mt-1 text-sm font-medium text-primary hover:text-primary-hover"
+                  className="text-[12px] text-[#E50914] hover:text-[#F40612] transition-colors font-medium py-2 -my-2 mt-1 inline-block min-h-[44px]"
                 >
                   {expanded ? 'ver menos' : 'ver mais'}
                 </button>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Continue button */}
           {nextLessonUrl && (
-            <Link
-              href={nextLessonUrl}
-              className="mt-4 inline-flex min-h-[44px] items-center rounded bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
-            >
-              Continuar de onde parei
-            </Link>
+            <motion.div variants={itemVariants} className="mt-6">
+              <Link
+                href={nextLessonUrl}
+                className="bg-[#E50914] hover:bg-[#F40612] text-white font-semibold rounded-lg px-6 h-11 w-full sm:w-auto transition-all duration-200 hover:-translate-y-[1px] hover:shadow-lg hover:shadow-[#E50914]/20 inline-flex items-center justify-center min-h-[44px]"
+              >
+                Continuar de onde parei
+              </Link>
+            </motion.div>
           )}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

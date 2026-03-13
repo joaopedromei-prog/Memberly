@@ -30,7 +30,7 @@ describe('Pagination', () => {
       <Pagination page={1} totalPages={3} totalItems={50} onPageChange={onPageChange} />
     );
 
-    const nextButtons = screen.getAllByText('›');
+    const nextButtons = screen.getAllByLabelText('Próxima página');
     fireEvent.click(nextButtons[0]);
     expect(onPageChange).toHaveBeenCalledWith(2);
   });
@@ -40,7 +40,7 @@ describe('Pagination', () => {
       <Pagination page={1} totalPages={3} totalItems={50} onPageChange={vi.fn()} />
     );
 
-    const prevButtons = screen.getAllByText('‹');
+    const prevButtons = screen.getAllByLabelText('Página anterior');
     expect(prevButtons[0]).toBeDisabled();
   });
 
@@ -49,7 +49,7 @@ describe('Pagination', () => {
       <Pagination page={3} totalPages={3} totalItems={50} onPageChange={vi.fn()} />
     );
 
-    const nextButtons = screen.getAllByText('›');
+    const nextButtons = screen.getAllByLabelText('Próxima página');
     expect(nextButtons[0]).toBeDisabled();
   });
 
