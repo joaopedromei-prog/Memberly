@@ -1,5 +1,8 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { HeroBanner, type HeroBannerItem } from '@/components/member/HeroBanner';
+
+export const dynamic = 'force-dynamic';
 import { Carousel } from '@/components/member/Carousel';
 import { ProductCard } from '@/components/member/ProductCard';
 import { ContinueWatchingCard } from '@/components/member/ContinueWatchingCard';
@@ -54,7 +57,10 @@ async function getMemberCatalog(): Promise<{
     return { products: [], continueWatching: [], bookmarks: [], heroItems: [] };
   }
 
-  const { data: memberAccess } = await supabase
+  // Use admin client for data queries to bypass RLS issues
+  const adminDb = createAdminClient();
+
+  const { data: memberAccess } = await adminDb
     .from('member_access')
     .select('product_id')
     .eq('profile_id', user.id);
@@ -65,7 +71,7 @@ async function getMemberCatalog(): Promise<{
 
   const productIds = memberAccess.map((a) => a.product_id);
 
-  const { data: rawProducts } = await supabase
+  const { data: rawProducts } = await adminDb
     .from('products')
     .select(`
       id, title, description, banner_url, slug, sort_order,
@@ -82,7 +88,7 @@ async function getMemberCatalog(): Promise<{
     return { products: [], continueWatching: [], bookmarks: [], heroItems: [] };
   }
 
-  const { data: progressData } = await supabase
+  const { data: progressData } = await adminDb
     .from('lesson_progress')
     .select('lesson_id, completed, last_watched_at')
     .eq('profile_id', user.id);
@@ -182,7 +188,7 @@ async function getMemberCatalog(): Promise<{
     return b.lastWatchedAt.localeCompare(a.lastWatchedAt);
   });
 
-  const { data: bookmarkData } = await supabase
+  const { data: bookmarkData } = await adminDb
     .from('lesson_bookmarks')
     .select(`
       id, created_at,

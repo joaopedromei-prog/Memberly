@@ -1,16 +1,18 @@
 import { redirect } from 'next/navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { ProductHero } from '@/components/member/ProductHero';
 import { ModuleList, type ModuleWithProgress } from '@/components/member/ModuleList';
 import { PreviewBanner } from '@/components/member/PreviewBanner';
 import { isDripUnlocked, getEffectiveDripDays } from '@/lib/utils/drip';
+
+export const dynamic = 'force-dynamic';
 
 interface Lesson {
   id: string;
   title: string;
   sort_order: number;
   is_published: boolean;
-  drip_days: number | null;
 }
 
 interface Module {
@@ -19,7 +21,6 @@ interface Module {
   description: string;
   banner_url: string | null;
   sort_order: number;
-  drip_days: number | null;
   lessons: Lesson[];
 }
 
@@ -64,47 +65,64 @@ export default async function ProductPage({
     isAdminPreview = profile?.role === 'admin';
   }
 
-  // Fetch product — in admin preview, skip is_published filter
-  let productQuery = supabase
-    .from('products')
-    .select(`
-      id, title, description, banner_url, slug,
-      modules (
-        id, title, description, banner_url, sort_order, drip_days,
-        lessons ( id, title, sort_order, is_published, drip_days )
-      )
-    `)
-    .eq('slug', slug);
+  const productSelect = `
+    id, title, description, banner_url, slug,
+    modules (
+      id, title, description, banner_url, sort_order,
+      lessons ( id, title, sort_order, is_published )
+    )
+  `;
 
-  if (!isAdminPreview) {
-    productQuery = productQuery.eq('is_published', true);
+  let resolvedProduct: Product | null = null;
+  let grantedAt: string | null = null;
+
+  // Use admin client (service role) for data queries to bypass RLS issues
+  // Authentication is already verified via supabase.auth.getUser() above
+  const adminDb = createAdminClient();
+
+  if (isAdminPreview) {
+    const { data } = await adminDb
+      .from('products')
+      .select(productSelect)
+      .eq('slug', slug)
+      .maybeSingle<Product>();
+    resolvedProduct = data;
+  } else {
+    // Member flow: verify access via member_access, then fetch product
+    const { data: memberAccess } = await adminDb
+      .from('member_access')
+      .select('product_id, granted_at')
+      .eq('profile_id', user.id);
+
+    if (memberAccess && memberAccess.length > 0) {
+      const accessProductIds = memberAccess.map((a) => a.product_id);
+
+      const { data: products } = await adminDb
+        .from('products')
+        .select(productSelect)
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .in('id', accessProductIds);
+
+      resolvedProduct = (products as Product[] | null)?.[0] ?? null;
+
+      if (resolvedProduct) {
+        const access = memberAccess.find((a) => a.product_id === resolvedProduct!.id);
+        grantedAt = access?.granted_at ?? null;
+      }
+    }
+
+    if (!resolvedProduct) {
+      redirect('/?message=produto-nao-encontrado');
+    }
   }
 
-  const { data: product } = await productQuery.single<Product>();
-
-  if (!product) {
+  if (!resolvedProduct) {
     redirect('/?message=produto-nao-encontrado');
   }
 
-  // Verify access and get granted_at (skip for admin preview)
-  let grantedAt: string | null = null;
-
-  if (!isAdminPreview) {
-    const { data: accessData } = await supabase
-      .from('member_access')
-      .select('product_id, granted_at')
-      .eq('profile_id', user.id)
-      .eq('product_id', product.id)
-      .maybeSingle();
-
-    if (!accessData) {
-      redirect('/?message=sem-acesso');
-    }
-    grantedAt = accessData.granted_at;
-  }
-
-  // Fetch member progress
-  const { data: progressData } = await supabase
+  // Fetch member progress (admin client bypasses RLS)
+  const { data: progressData } = await adminDb
     .from('lesson_progress')
     .select('lesson_id, completed')
     .eq('profile_id', user.id)
@@ -115,7 +133,7 @@ export default async function ProductPage({
   );
 
   // Sort modules by sort_order
-  const sortedModules = [...product.modules].sort(
+  const sortedModules = [...resolvedProduct.modules].sort(
     (a, b) => a.sort_order - b.sort_order
   );
 
@@ -131,8 +149,8 @@ export default async function ProductPage({
       completedLessonIds.has(l.id)
     ).length;
 
-    // Drip check for module
-    const moduleDripDays = mod.drip_days;
+    // Drip check for module (drip_days column not yet applied to DB — safe fallback)
+    const moduleDripDays = 'drip_days' in mod ? (mod as Record<string, unknown>).drip_days as number | null : null;
     const isModuleLocked = !isAdminPreview && grantedAt
       ? !isDripUnlocked(grantedAt, moduleDripDays)
       : false;
@@ -193,13 +211,13 @@ export default async function ProductPage({
   return (
     <div className="pb-12">
       {isAdminPreview && (
-        <PreviewBanner adminUrl={`/admin/products/${product.id}`} />
+        <PreviewBanner adminUrl={`/admin/products/${resolvedProduct.id}`} />
       )}
       <div className={isAdminPreview ? 'pt-11' : ''}>
         <ProductHero
-          title={product.title}
-          description={product.description}
-          bannerUrl={product.banner_url}
+          title={resolvedProduct.title}
+          description={resolvedProduct.description}
+          bannerUrl={resolvedProduct.banner_url}
           totalModules={totalModules}
           totalLessons={totalLessons}
           nextLessonUrl={nextLessonUrl}

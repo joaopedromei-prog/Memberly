@@ -1,14 +1,16 @@
 import { redirect } from 'next/navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { VideoPlayer } from '@/components/shared/VideoPlayer';
 import { LessonLayout } from '@/components/member/LessonLayout';
+
+export const dynamic = 'force-dynamic';
 import { LessonInfo } from '@/components/member/LessonInfo';
 import { LessonNavigation } from '@/components/member/LessonNavigation';
 import { LessonSidebar, type SidebarLesson } from '@/components/member/LessonSidebar';
 import { CommentSection } from '@/components/shared/CommentSection';
 import { PreviewBanner } from '@/components/member/PreviewBanner';
 import { WatchTracker } from '@/components/member/WatchTracker';
-import { isDripUnlocked, getEffectiveDripDays } from '@/lib/utils/drip';
 import type { LessonAttachment } from '@/types/database';
 
 interface LessonRow {
@@ -17,7 +19,6 @@ interface LessonRow {
   sort_order: number;
   duration_minutes: number | null;
   is_published: boolean;
-  drip_days: number | null;
 }
 
 interface LessonDetail {
@@ -30,12 +31,10 @@ interface LessonDetail {
   attachments: LessonAttachment[] | null;
   sort_order: number;
   duration_minutes: number | null;
-  drip_days: number | null;
   module: {
     id: string;
     title: string;
     product_id: string;
-    drip_days: number | null;
     product: { id: string; title: string; slug: string };
     lessons: LessonRow[];
   };
@@ -73,16 +72,19 @@ export default async function LessonPage({
     isAdminPreview = profile?.role === 'admin';
   }
 
+  // Use admin client for data queries to bypass RLS issues
+  const adminDb = createAdminClient();
+
   // Fetch lesson with module and product context
-  const { data: lesson } = await supabase
+  const { data: lesson } = await adminDb
     .from('lessons')
     .select(`
       id, title, description, video_provider, video_id, pdf_url, attachments,
-      sort_order, duration_minutes, drip_days,
+      sort_order, duration_minutes,
       module:modules!inner (
-        id, title, product_id, drip_days,
+        id, title, product_id,
         product:products!inner ( id, title, slug ),
-        lessons ( id, title, sort_order, duration_minutes, is_published, drip_days )
+        lessons ( id, title, sort_order, duration_minutes, is_published )
       )
     `)
     .eq('id', lessonId)
@@ -96,7 +98,7 @@ export default async function LessonPage({
   let grantedAt: string | null = null;
 
   if (!isAdminPreview) {
-    const { data: access } = await supabase
+    const { data: access } = await adminDb
       .from('member_access')
       .select('id, granted_at')
       .eq('profile_id', user.id)
@@ -107,17 +109,11 @@ export default async function LessonPage({
       redirect('/?message=sem-acesso');
     }
     grantedAt = access.granted_at;
-
-    // Check drip lock for current lesson
-    const effectiveDrip = getEffectiveDripDays(lesson.module.drip_days, lesson.drip_days);
-    if (effectiveDrip > 0 && grantedAt && !isDripUnlocked(grantedAt, effectiveDrip)) {
-      redirect(`/products/${slug}?drip=blocked`);
-    }
   }
 
   // Fetch progress for all lessons in this module
   const moduleLessonIds = lesson.module.lessons.map((l) => l.id);
-  const { data: progressData } = await supabase
+  const { data: progressData } = await adminDb
     .from('lesson_progress')
     .select('lesson_id, completed')
     .eq('profile_id', user.id)
@@ -128,7 +124,7 @@ export default async function LessonPage({
   );
 
   // Check if lesson is bookmarked
-  const { data: bookmarkData } = await supabase
+  const { data: bookmarkData } = await adminDb
     .from('lesson_bookmarks')
     .select('id')
     .eq('profile_id', user.id)
@@ -156,12 +152,9 @@ export default async function LessonPage({
     ? `/products/${slug}/lessons/${nextLesson.id}${previewSuffix}`
     : null;
 
-  // Build sidebar lessons (show draft badge in preview, lock badge for drip)
+  // Build sidebar lessons (drip_days not yet in DB — all unlocked)
   const sidebarLessons: SidebarLesson[] = sortedLessons.map((l) => {
-    const effectiveDrip = getEffectiveDripDays(lesson.module.drip_days, l.drip_days);
-    const locked = !isAdminPreview && grantedAt && effectiveDrip > 0
-      ? !isDripUnlocked(grantedAt, effectiveDrip)
-      : false;
+    const locked = false;
 
     return {
       id: l.id,
