@@ -16,27 +16,11 @@ import { apiRequest } from '@/lib/utils/api';
 import { useToastStore } from '@/stores/toast-store';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { GrantAccessModal } from '@/components/admin/GrantAccessModal';
+import { AVATAR_GRADIENTS, PRODUCT_GRADIENTS } from '@/lib/constants/gradients';
 import type { MemberAccessWithProduct } from '@/types/api';
 import type { Database } from '@/types/database';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
-
-const AVATAR_GRADIENTS = [
-  'from-[#2563EB] to-[#7C3AED]',
-  'from-[#059669] to-[#0EA5E9]',
-  'from-[#DC2626] to-[#F97316]',
-  'from-[#7C3AED] to-[#EC4899]',
-  'from-[#0EA5E9] to-[#06B6D4]',
-  'from-[#F97316] to-[#EAB308]',
-];
-
-const PRODUCT_GRADIENTS = [
-  'linear-gradient(135deg, #1a1a2e, #0f3460)',
-  'linear-gradient(135deg, #1a2e1a, #0f6034)',
-  'linear-gradient(135deg, #2e1a2e, #600f4a)',
-  'linear-gradient(135deg, #2e2e1a, #604a0f)',
-  'linear-gradient(135deg, #1a2e2e, #0f4a60)',
-];
 
 function getInitials(name: string | null): string {
   if (!name) return '?';

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Play } from 'lucide-react';
+import { CONTINUE_WATCHING_GRADIENTS as CARD_GRADIENTS } from '@/lib/constants/gradients';
 
 interface BookmarkCardProps {
   lessonId: string;
@@ -11,14 +12,6 @@ interface BookmarkCardProps {
   productSlug: string;
   durationMinutes: number | null;
 }
-
-const CARD_GRADIENTS = [
-  'linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)',
-  'linear-gradient(135deg, #1a2e1a 0%, #0f6034 100%)',
-  'linear-gradient(135deg, #2e1a2e 0%, #600f4a 100%)',
-  'linear-gradient(135deg, #2e2e1a 0%, #604a0f 100%)',
-  'linear-gradient(135deg, #1a2e2e 0%, #0f4a60 100%)',
-];
 
 function gradientFromTitle(title: string) {
   let hash = 0;
