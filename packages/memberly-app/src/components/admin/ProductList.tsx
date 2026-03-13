@@ -17,6 +17,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DuplicateProductDialog } from '@/components/admin/DuplicateProductDialog';
 import { apiRequest, ApiRequestError } from '@/lib/utils/api';
 import { useToastStore } from '@/stores/toast-store';
+import { PRODUCT_LIST_GRADIENTS } from '@/lib/constants/gradients';
 
 export interface ProductListItem {
   id: string;
@@ -35,21 +36,12 @@ interface ProductListProps {
 
 type StatusFilter = 'all' | 'published' | 'draft';
 
-const CARD_GRADIENTS = [
-  'linear-gradient(to bottom right, #1a1a2e, #0f3460)',
-  'linear-gradient(to bottom right, #1a2e1a, #0f6034)',
-  'linear-gradient(to bottom right, #2e2e1a, #604a0f)',
-  'linear-gradient(to bottom right, #2e1a2e, #600f4a)',
-  'linear-gradient(to bottom right, #1a2e2e, #0f4a60)',
-  'linear-gradient(to bottom right, #2e1a1a, #600f0f)',
-];
-
 function gradientForProduct(title: string): string {
   let hash = 0;
   for (let i = 0; i < title.length; i++) {
     hash = title.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return CARD_GRADIENTS[Math.abs(hash) % CARD_GRADIENTS.length];
+  return PRODUCT_LIST_GRADIENTS[Math.abs(hash) % PRODUCT_LIST_GRADIENTS.length];
 }
 
 export function ProductList({ products: initialProducts }: ProductListProps) {

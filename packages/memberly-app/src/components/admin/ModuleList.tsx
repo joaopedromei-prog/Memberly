@@ -18,6 +18,7 @@ import { ModuleForm } from '@/components/admin/ModuleForm';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { apiRequest, ApiRequestError } from '@/lib/utils/api';
 import { useToastStore } from '@/stores/toast-store';
+import { MODULE_LIST_GRADIENTS } from '@/lib/constants/gradients';
 
 export interface ModuleListItem {
   id: string;
@@ -38,21 +39,12 @@ interface ModuleListProps {
   modules: ModuleListItem[];
 }
 
-const MODULE_GRADIENTS = [
-  'linear-gradient(to right, #2d1b69, #1a0a3e)',
-  'linear-gradient(to right, #1b4332, #0a2e1a)',
-  'linear-gradient(to right, #1a1a2e, #0f3460)',
-  'linear-gradient(to right, #2e1a1a, #600f1a)',
-  'linear-gradient(to right, #1a2e2e, #0f4a60)',
-  'linear-gradient(to right, #2e2e1a, #604a0f)',
-];
-
 function gradientForModule(title: string): string {
   let hash = 0;
   for (let i = 0; i < title.length; i++) {
     hash = title.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return MODULE_GRADIENTS[Math.abs(hash) % MODULE_GRADIENTS.length];
+  return MODULE_LIST_GRADIENTS[Math.abs(hash) % MODULE_LIST_GRADIENTS.length];
 }
 
 function ModuleCard({

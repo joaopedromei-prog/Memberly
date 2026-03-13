@@ -6,15 +6,7 @@ import Link from 'next/link';
 import { motion, useReducedMotion } from 'motion/react';
 import { Check, Lock } from 'lucide-react';
 import { DripCountdownToast } from '@/components/member/DripCountdownToast';
-
-const MODULE_GRADIENTS = [
-  'from-[#2d1b69] to-[#1a0a3e]',
-  'from-[#1b4332] to-[#0a2e1a]',
-  'from-[#1a1a2e] to-[#0f3460]',
-  'from-[#2e1a1a] to-[#600f1a]',
-  'from-[#1a2e2e] to-[#0f4a60]',
-  'from-[#2e2e1a] to-[#604a0f]',
-];
+import { MODULE_CARD_GRADIENTS } from '@/lib/constants/gradients';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -60,7 +52,7 @@ export function ModuleCard({
       : 0;
   const isComplete = progress === 100;
   const href = nextLessonUrl || `/products/${productSlug}`;
-  const gradient = MODULE_GRADIENTS[index % MODULE_GRADIENTS.length];
+  const gradient = MODULE_CARD_GRADIENTS[index % MODULE_CARD_GRADIENTS.length];
 
   function handleLockedClick(e: React.MouseEvent) {
     e.preventDefault();

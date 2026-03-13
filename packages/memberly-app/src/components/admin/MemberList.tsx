@@ -11,18 +11,8 @@ import { BulkActionBar } from '@/components/admin/BulkActionBar';
 import { BatchAccessDialog } from '@/components/admin/BatchAccessDialog';
 import { ImportMembersDialog } from '@/components/admin/ImportMembersDialog';
 import { AddMemberDialog } from '@/components/admin/AddMemberDialog';
+import { AVATAR_GRADIENTS } from '@/lib/constants/gradients';
 import type { MemberWithAccessCount, ProductWithModuleCount } from '@/types/api';
-
-const AVATAR_GRADIENTS = [
-  'from-[#2563EB] to-[#7C3AED]',
-  'from-[#059669] to-[#0EA5E9]',
-  'from-[#DC2626] to-[#F97316]',
-  'from-[#7C3AED] to-[#EC4899]',
-  'from-[#0EA5E9] to-[#06B6D4]',
-  'from-[#F97316] to-[#EAB308]',
-  'from-[#059669] to-[#7C3AED]',
-  'from-[#EC4899] to-[#8B5CF6]',
-];
 
 function getInitials(name: string | null): string {
   if (!name) return '?';

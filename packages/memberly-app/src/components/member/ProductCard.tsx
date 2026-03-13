@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Play, Check } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { BANNER_FALLBACK_GRADIENTS } from '@/lib/constants/gradients';
 
 interface ProductCardProps {
   slug: string;
@@ -12,21 +13,12 @@ interface ProductCardProps {
   progress: number;
 }
 
-const CARD_GRADIENTS = [
-  'linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)',
-  'linear-gradient(135deg, #1a2e1a 0%, #0f6034 100%)',
-  'linear-gradient(135deg, #2e1a2e 0%, #600f4a 100%)',
-  'linear-gradient(135deg, #2e2e1a 0%, #604a0f 100%)',
-  'linear-gradient(135deg, #1a2e2e 0%, #0f4a60 100%)',
-  'linear-gradient(135deg, #2e1a1a 0%, #600f0f 100%)',
-];
-
 function gradientFromTitle(title: string) {
   let hash = 0;
   for (let i = 0; i < title.length; i++) {
     hash = title.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return CARD_GRADIENTS[Math.abs(hash) % CARD_GRADIENTS.length];
+  return BANNER_FALLBACK_GRADIENTS[Math.abs(hash) % BANNER_FALLBACK_GRADIENTS.length];
 }
 
 export function ProductCard({ slug, title, bannerUrl, progress }: ProductCardProps) {

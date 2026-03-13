@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
 import { Play } from 'lucide-react';
+import { HERO_GRADIENTS } from '@/lib/constants/gradients';
 
 export interface HeroBannerItem {
   slug: string;
@@ -18,12 +19,6 @@ export interface HeroBannerItem {
 interface HeroBannerProps {
   items: HeroBannerItem[];
 }
-
-const HERO_GRADIENTS = [
-  'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-  'linear-gradient(135deg, #1a2e1a 0%, #163e21 50%, #0f6034 100%)',
-  'linear-gradient(135deg, #2e1a2e 0%, #3e163e 50%, #600f4a 100%)',
-];
 
 const staggerVariants = {
   visible: { transition: { staggerChildren: 0.1, delayChildren: 0.3 } },
