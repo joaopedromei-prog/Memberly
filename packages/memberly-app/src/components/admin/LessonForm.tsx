@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { BulkFileUpload } from '@/components/admin/BulkFileUpload';
 import { VideoPlayer } from '@/components/shared/VideoPlayer';
@@ -114,23 +116,15 @@ export function LessonForm({
 
   const formContent = (
     <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label
-            htmlFor="lesson-title"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Título *
-          </label>
-          <input
-            id="lesson-title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="Ex: Aula 1 — Introdução"
-          />
-          {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-        </div>
+        <Input
+          id="lesson-title"
+          label="Título *"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Ex: Aula 1 — Introdução"
+          error={error}
+        />
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
@@ -143,37 +137,23 @@ export function LessonForm({
           />
         </div>
 
-        <div>
-          <label
-            htmlFor="lesson-provider"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Provider de Vídeo
-          </label>
-          <select
-            id="lesson-provider"
-            value={videoProvider}
-            onChange={(e) => setVideoProvider(e.target.value as VideoProvider)}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <option value="youtube">YouTube</option>
-            <option value="pandavideo">Panda Video</option>
-          </select>
-        </div>
+        <Select
+          id="lesson-provider"
+          label="Provider de Vídeo"
+          value={videoProvider}
+          onChange={(e) => setVideoProvider(e.target.value as VideoProvider)}
+        >
+          <option value="youtube">YouTube</option>
+          <option value="pandavideo">Panda Video</option>
+        </Select>
 
         <div>
-          <label
-            htmlFor="lesson-video"
-            className="block text-sm font-medium text-gray-700"
-          >
-            ID ou URL do Vídeo
-          </label>
-          <input
+          <Input
             id="lesson-video"
+            label="ID ou URL do Vídeo"
             type="text"
             value={videoInput}
             onChange={(e) => setVideoInput(e.target.value)}
-            className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             placeholder={
               videoProvider === 'youtube'
                 ? 'Ex: https://youtube.com/watch?v=dQw4w9WgXcQ'
@@ -198,38 +178,26 @@ export function LessonForm({
           </div>
         )}
 
-        <div>
-          <label
-            htmlFor="lesson-duration"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Duração (minutos)
-          </label>
-          <input
-            id="lesson-duration"
-            type="number"
-            min="0"
-            value={durationMinutes}
-            onChange={(e) => setDurationMinutes(e.target.value)}
-            className="mt-1 block w-32 rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="Ex: 15"
-          />
-        </div>
+        <Input
+          id="lesson-duration"
+          label="Duração (minutos)"
+          type="number"
+          min={0}
+          value={durationMinutes}
+          onChange={(e) => setDurationMinutes(e.target.value)}
+          className="w-32"
+          placeholder="Ex: 15"
+        />
 
         <div>
-          <label
-            htmlFor="lesson-drip"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Disponível após X dias da compra
-          </label>
-          <input
+          <Input
             id="lesson-drip"
+            label="Disponível após X dias da compra"
             type="number"
-            min="0"
+            min={0}
             value={dripDays}
             onChange={(e) => setDripDays(e.target.value)}
-            className="mt-1 block w-32 rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-32"
             placeholder="0"
           />
           {moduleDripDays != null && moduleDripDays > 0 && (

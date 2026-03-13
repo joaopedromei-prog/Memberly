@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Input } from '@/components/ui/Input';
 import { useToastStore } from '@/stores/toast-store';
 
 interface DuplicateProductDialogProps {
@@ -49,16 +50,15 @@ export function DuplicateProductDialog({
         <p className="mb-4 text-sm text-gray-600">
           Todos os módulos e aulas serão copiados. O novo produto será criado como rascunho.
         </p>
-        <label htmlFor="dup-title" className="block text-sm font-medium text-gray-700">
-          Título do novo produto
-        </label>
-        <input
-          id="dup-title"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="mt-1 mb-4 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
+        <div className="mb-4">
+          <Input
+            id="dup-title"
+            label="Título do novo produto"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
         <div className="flex justify-end gap-2">
           <button
             type="button"

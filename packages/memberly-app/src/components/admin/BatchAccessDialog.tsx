@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { useToastStore } from '@/stores/toast-store';
 
 interface Product {
@@ -68,31 +70,30 @@ export function BatchAccessDialog({
             : `Conceder acesso a ${profileIds.length} membro${profileIds.length !== 1 ? 's' : ''} ao produto selecionado.`}
         </p>
 
-        <label htmlFor="batch-product" className="block text-sm font-medium text-gray-700">
-          Produto
-        </label>
-        <select
-          id="batch-product"
-          value={productId}
-          onChange={(e) => setProductId(e.target.value)}
-          className="mt-1 mb-4 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="">Selecione um produto...</option>
-          {products.map((p) => (
-            <option key={p.id} value={p.id}>{p.title}</option>
-          ))}
-        </select>
+        <div className="mb-4">
+          <Select
+            id="batch-product"
+            label="Produto"
+            value={productId}
+            onChange={(e) => setProductId(e.target.value)}
+          >
+            <option value="">Selecione um produto...</option>
+            {products.map((p) => (
+              <option key={p.id} value={p.id}>{p.title}</option>
+            ))}
+          </Select>
+        </div>
 
         {isRevoke && (
           <div className="mb-4">
             <p className="mb-2 text-sm text-red-600">
               Esta ação não pode ser desfeita. Digite <strong>REVOGAR</strong> para confirmar.
             </p>
-            <input
+            <Input
               type="text"
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
-              className="block w-full rounded-lg border border-red-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+              className="border-red-300 focus:border-red-500 focus:ring-red-500"
               placeholder="REVOGAR"
             />
           </div>

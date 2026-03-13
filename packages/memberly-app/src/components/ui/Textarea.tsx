@@ -1,14 +1,14 @@
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils/cn';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
   helperText?: string;
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
-  function Input({ className, label, error, helperText, id, ...props }, ref) {
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+  function Textarea({ className, label, error, helperText, id, ...props }, ref) {
     return (
       <div className="w-full">
         {label && (
@@ -16,7 +16,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <input
+        <textarea
           ref={ref}
           id={id}
           className={cn(
