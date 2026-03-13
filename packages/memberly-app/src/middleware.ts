@@ -35,6 +35,11 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
+  // Root URL → always redirect to login
+  if (path === '/') {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   // Public routes — no auth required
   if (PUBLIC_ROUTES.some((route) => path.startsWith(route))) {
     return supabaseResponse;
