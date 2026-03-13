@@ -4,12 +4,13 @@ import { useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'motion/react';
-import { Upload, Download, Eye, XCircle } from 'lucide-react';
+import { Plus, Upload, Download, Eye, XCircle } from 'lucide-react';
 import { SearchInput } from '@/components/ui/SearchInput';
 import { Pagination } from '@/components/ui/Pagination';
 import { BulkActionBar } from '@/components/admin/BulkActionBar';
 import { BatchAccessDialog } from '@/components/admin/BatchAccessDialog';
 import { ImportMembersDialog } from '@/components/admin/ImportMembersDialog';
+import { AddMemberDialog } from '@/components/admin/AddMemberDialog';
 import type { MemberWithAccessCount, ProductWithModuleCount } from '@/types/api';
 
 const AVATAR_GRADIENTS = [
@@ -62,6 +63,7 @@ export function MemberList({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [batchAction, setBatchAction] = useState<'grant' | 'revoke' | null>(null);
   const [showImport, setShowImport] = useState(false);
+  const [showAddMember, setShowAddMember] = useState(false);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   const updateParams = useCallback(
@@ -136,6 +138,14 @@ export function MemberList({
           </span>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowAddMember(true)}
+            className="flex items-center px-4 h-10 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors shadow-sm"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar membro
+          </button>
           <button
             type="button"
             onClick={() => setShowImport(true)}
@@ -412,6 +422,14 @@ export function MemberList({
 
       {/* Import Dialog */}
       {showImport && <ImportMembersDialog onClose={() => setShowImport(false)} />}
+
+      {/* Add Member Dialog */}
+      {showAddMember && (
+        <AddMemberDialog
+          products={products.map((p) => ({ id: p.id, title: p.title }))}
+          onClose={() => setShowAddMember(false)}
+        />
+      )}
     </div>
   );
 }

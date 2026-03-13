@@ -71,6 +71,24 @@ function resetSupabaseChain() {
 
 const mockSupabase = { from: mockFrom };
 
+// Mock admin client for POST /api/members
+const mockAdminCreateUser = vi.fn();
+const mockAdminResetPassword = vi.fn();
+const mockAdminUpsert = vi.fn();
+const mockAdminInsert = vi.fn();
+
+const mockAdminFrom = vi.fn();
+
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => ({
+    auth: {
+      admin: { createUser: mockAdminCreateUser },
+      resetPasswordForEmail: mockAdminResetPassword,
+    },
+    from: mockAdminFrom,
+  }),
+}));
+
 // Mock auth-guard
 vi.mock('@/lib/utils/auth-guard', () => ({
   requireAdmin: vi.fn(),
@@ -132,6 +150,97 @@ describe('Members API', () => {
       const data = await response.json();
 
       expect(data.limit).toBe(100);
+    });
+  });
+
+  describe('POST /api/members (create individual)', () => {
+    beforeEach(() => {
+      mockAdminCreateUser.mockResolvedValue({
+        data: { user: { id: 'new-user-1' } },
+        error: null,
+      });
+      mockAdminUpsert.mockResolvedValue({ error: null });
+      mockAdminInsert.mockResolvedValue({ error: null });
+      mockAdminResetPassword.mockResolvedValue({ error: null });
+      mockAdminFrom.mockReturnValue({
+        upsert: mockAdminUpsert,
+        insert: mockAdminInsert,
+      });
+    });
+
+    it('should require full_name', async () => {
+      const { POST } = await import('@/app/api/members/route');
+      const request = new Request('http://localhost/api/members', {
+        method: 'POST',
+        body: JSON.stringify({ email: 'test@test.com' }),
+      });
+      const response = await POST(request as never);
+      expect(response.status).toBe(400);
+    });
+
+    it('should require email', async () => {
+      const { POST } = await import('@/app/api/members/route');
+      const request = new Request('http://localhost/api/members', {
+        method: 'POST',
+        body: JSON.stringify({ full_name: 'Test User' }),
+      });
+      const response = await POST(request as never);
+      expect(response.status).toBe(400);
+    });
+
+    it('should reject invalid email format', async () => {
+      const { POST } = await import('@/app/api/members/route');
+      const request = new Request('http://localhost/api/members', {
+        method: 'POST',
+        body: JSON.stringify({ full_name: 'Test', email: 'invalid' }),
+      });
+      const response = await POST(request as never);
+      expect(response.status).toBe(400);
+    });
+
+    it('should create member successfully', async () => {
+      const { POST } = await import('@/app/api/members/route');
+      const request = new Request('http://localhost/api/members', {
+        method: 'POST',
+        body: JSON.stringify({ full_name: 'João Silva', email: 'joao@test.com' }),
+      });
+      const response = await POST(request as never);
+      const data = await response.json();
+
+      expect(response.status).toBe(201);
+      expect(data.id).toBe('new-user-1');
+      expect(data.full_name).toBe('João Silva');
+      expect(mockAdminCreateUser).toHaveBeenCalled();
+      expect(mockAdminResetPassword).toHaveBeenCalled();
+    });
+
+    it('should return 409 for duplicate email', async () => {
+      mockAdminCreateUser.mockResolvedValue({
+        data: { user: null },
+        error: { message: 'User already been registered' },
+      });
+      const { POST } = await import('@/app/api/members/route');
+      const request = new Request('http://localhost/api/members', {
+        method: 'POST',
+        body: JSON.stringify({ full_name: 'Test', email: 'existing@test.com' }),
+      });
+      const response = await POST(request as never);
+      expect(response.status).toBe(409);
+    });
+
+    it('should grant product access if product_id provided', async () => {
+      const { POST } = await import('@/app/api/members/route');
+      const request = new Request('http://localhost/api/members', {
+        method: 'POST',
+        body: JSON.stringify({ full_name: 'Test', email: 'test@test.com', product_id: 'prod-1' }),
+      });
+      await POST(request as never);
+
+      expect(mockAdminInsert).toHaveBeenCalledWith({
+        profile_id: 'new-user-1',
+        product_id: 'prod-1',
+        granted_by: 'manual',
+      });
     });
   });
 

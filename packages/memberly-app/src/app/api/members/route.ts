@@ -1,5 +1,6 @@
 import { type NextRequest } from 'next/server';
 import { requireAdmin } from '@/lib/utils/auth-guard';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
 
 export async function GET(request: NextRequest) {
@@ -60,4 +61,80 @@ export async function GET(request: NextRequest) {
     limit,
     totalPages: Math.ceil((count ?? 0) / limit),
   });
+}
+
+export async function POST(request: NextRequest) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
+
+  let body: { full_name?: string; email?: string; product_id?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return apiError('INVALID_BODY', 'Body JSON inválido', 400);
+  }
+
+  const { full_name, email, product_id } = body;
+
+  if (!full_name || !full_name.trim()) {
+    return apiError('VALIDATION_ERROR', 'Nome completo é obrigatório', 400);
+  }
+
+  if (!email || !email.trim()) {
+    return apiError('VALIDATION_ERROR', 'Email é obrigatório', 400);
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return apiError('VALIDATION_ERROR', 'Formato de email inválido', 400);
+  }
+
+  const supabaseAdmin = createAdminClient();
+
+  // Create user in Supabase Auth
+  const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    email: email.trim(),
+    password: crypto.randomUUID(),
+    email_confirm: true,
+  });
+
+  if (authError) {
+    if (authError.message?.includes('already been registered') || authError.message?.includes('already exists')) {
+      return apiError('CONFLICT', 'Este email já está cadastrado', 409);
+    }
+    return apiError('AUTH_ERROR', authError.message, 500);
+  }
+
+  // Create profile
+  const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
+    id: authData.user.id,
+    full_name: full_name.trim(),
+    role: 'member',
+  });
+
+  if (profileError) {
+    return apiError('PROFILE_ERROR', profileError.message, 500);
+  }
+
+  // Grant product access if product selected
+  if (product_id) {
+    await supabaseAdmin.from('member_access').insert({
+      profile_id: authData.user.id,
+      product_id,
+      granted_by: 'manual',
+    });
+  }
+
+  // Send password recovery email
+  await supabaseAdmin.auth.resetPasswordForEmail(email.trim());
+
+  return apiSuccess(
+    {
+      id: authData.user.id,
+      full_name: full_name.trim(),
+      email: email.trim(),
+      product_id: product_id || null,
+    },
+    201
+  );
 }
