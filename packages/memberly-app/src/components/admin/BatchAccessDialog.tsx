@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToastStore } from '@/stores/toast-store';
+import { Dialog } from '@/components/ui/Dialog';
 
 interface Product {
   id: string;
@@ -54,14 +55,11 @@ export function BatchAccessDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
-      <div
-        className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="mb-4 text-lg font-bold text-gray-900">
-          {isRevoke ? 'Revogar Acesso' : 'Conceder Acesso'}
-        </h2>
+    <Dialog open={true} onClose={onClose}>
+      <Dialog.Header>
+        {isRevoke ? 'Revogar Acesso' : 'Conceder Acesso'}
+      </Dialog.Header>
+      <Dialog.Body>
         <p className="mb-4 text-sm text-gray-600">
           {isRevoke
             ? `Revogar acesso de ${profileIds.length} membro${profileIds.length !== 1 ? 's' : ''} ao produto selecionado.`
@@ -97,29 +95,28 @@ export function BatchAccessDialog({
             />
           </div>
         )}
-
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={loading || !canSubmit}
-            className={`rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50 ${
-              isRevoke
-                ? 'bg-red-600 hover:bg-red-700'
-                : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-          >
-            {loading ? 'Processando...' : isRevoke ? 'Revogar' : 'Conceder'}
-          </button>
-        </div>
-      </div>
-    </div>
+      </Dialog.Body>
+      <Dialog.Footer>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={loading || !canSubmit}
+          className={`rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50 ${
+            isRevoke
+              ? 'bg-red-600 hover:bg-red-700'
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
+        >
+          {loading ? 'Processando...' : isRevoke ? 'Revogar' : 'Conceder'}
+        </button>
+      </Dialog.Footer>
+    </Dialog>
   );
 }

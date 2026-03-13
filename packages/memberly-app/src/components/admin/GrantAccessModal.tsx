@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { apiRequest } from '@/lib/utils/api';
 import { useToastStore } from '@/stores/toast-store';
 import { Button } from '@/components/ui/Button';
+import { Dialog } from '@/components/ui/Dialog';
 
 interface GrantAccessModalProps {
   open: boolean;
@@ -23,8 +24,6 @@ export function GrantAccessModal({
   const addToast = useToastStore((s) => s.addToast);
   const [selectedProductId, setSelectedProductId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  if (!open) return null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,15 +45,14 @@ export function GrantAccessModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
-      <div className="relative z-10 w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-        <h2 className="text-lg font-semibold text-gray-900">Atribuir Acesso</h2>
-        <p className="mt-1 text-sm text-gray-500">
+    <Dialog open={open} onClose={onClose}>
+      <Dialog.Header>Atribuir Acesso</Dialog.Header>
+      <Dialog.Body>
+        <p className="mb-4 text-sm text-gray-500">
           Selecione um produto para liberar acesso ao membro.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <select
             value={selectedProductId}
             onChange={(e) => setSelectedProductId(e.target.value)}
@@ -78,7 +76,7 @@ export function GrantAccessModal({
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </Dialog.Body>
+    </Dialog>
   );
 }

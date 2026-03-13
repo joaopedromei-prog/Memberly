@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToastStore } from '@/stores/toast-store';
+import { Dialog } from '@/components/ui/Dialog';
 
 interface DuplicateProductDialogProps {
   productId: string;
@@ -40,12 +41,9 @@ export function DuplicateProductDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
-      <div
-        className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="mb-4 text-lg font-bold text-gray-900">Duplicar Produto</h2>
+    <Dialog open={true} onClose={onClose}>
+      <Dialog.Header>Duplicar Produto</Dialog.Header>
+      <Dialog.Body>
         <p className="mb-4 text-sm text-gray-600">
           Todos os módulos e aulas serão copiados. O novo produto será criado como rascunho.
         </p>
@@ -57,26 +55,26 @@ export function DuplicateProductDialog({
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="mt-1 mb-4 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleDuplicate}
-            disabled={loading || !title.trim()}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-          >
-            {loading ? 'Duplicando...' : 'Duplicar'}
-          </button>
-        </div>
-      </div>
-    </div>
+      </Dialog.Body>
+      <Dialog.Footer>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          onClick={handleDuplicate}
+          disabled={loading || !title.trim()}
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          {loading ? 'Duplicando...' : 'Duplicar'}
+        </button>
+      </Dialog.Footer>
+    </Dialog>
   );
 }
