@@ -104,8 +104,8 @@ describe('AddMemberDialog', () => {
   it('calls onClose when clicking backdrop', () => {
     render(<AddMemberDialog products={mockProducts} onClose={onClose} />);
 
-    // Click the backdrop (outermost div)
-    fireEvent.click(screen.getByText('Adicionar Membro').closest('.fixed')!);
+    // Click the backdrop overlay
+    fireEvent.click(screen.getByTestId('dialog-overlay'));
     expect(onClose).toHaveBeenCalled();
   });
 

@@ -26,7 +26,7 @@ describe('ProgressBar', () => {
 
   it('uses success color for 100% progress', () => {
     const { container } = render(<ProgressBar value={100} />);
-    const bar = container.querySelector('[class*="46D369"]');
+    const bar = container.querySelector('.bg-accent-success');
     expect(bar).toBeInTheDocument();
   });
 

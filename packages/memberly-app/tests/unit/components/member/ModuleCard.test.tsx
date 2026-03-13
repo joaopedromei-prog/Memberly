@@ -91,14 +91,14 @@ describe('ModuleCard', () => {
 
   it('renders progress bar when lessons exist', () => {
     const { container } = render(<ModuleCard {...defaultProps} />);
-    const progressBar = container.querySelector('.bg-\\[\\#46D369\\]');
+    const progressBar = container.querySelector('.bg-accent-success');
     expect(progressBar).toBeInTheDocument();
   });
 
   it('does not render progress bar when zero lessons', () => {
     const { container } = render(<ModuleCard {...defaultProps} totalLessons={0} completedLessons={0} />);
     expect(screen.getByText('0/0 aulas')).toBeInTheDocument();
-    const progressBar = container.querySelector('.bg-\\[\\#46D369\\]');
+    const progressBar = container.querySelector('.bg-accent-success');
     expect(progressBar).not.toBeInTheDocument();
   });
 });
