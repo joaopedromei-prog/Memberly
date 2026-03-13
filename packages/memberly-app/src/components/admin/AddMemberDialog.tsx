@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { useToastStore } from '@/stores/toast-store';
 import { Dialog } from '@/components/ui/Dialog';
 
@@ -88,87 +90,60 @@ export function AddMemberDialog({ products, onClose }: AddMemberDialogProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="add-member-name" className="mb-1 block text-sm font-medium text-gray-700">
-            Nome completo <span className="text-red-500">*</span>
-          </label>
-          <input
+          <Input
             id="add-member-name"
+            label="Nome completo *"
             type="text"
             value={fullName}
             onChange={(e) => {
               setFullName(e.target.value);
               if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
             }}
-            className={`h-10 w-full rounded-lg border px-3 text-sm text-gray-900 focus:outline-none focus:ring-1 transition-all ${
-              errors.fullName
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/30'
-                : 'border-gray-200 focus:border-blue-500 focus:ring-blue-500/30'
-            }`}
             placeholder="Nome do membro"
+            error={errors.fullName}
           />
-          {errors.fullName && (
-            <p className="mt-1 text-xs text-red-600">{errors.fullName}</p>
-          )}
-        </div>
 
-        <div>
-          <label htmlFor="add-member-email" className="mb-1 block text-sm font-medium text-gray-700">
-            Email <span className="text-red-500">*</span>
-          </label>
-          <input
+          <Input
             id="add-member-email"
+            label="Email *"
             type="email"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
               if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
             }}
-            className={`h-10 w-full rounded-lg border px-3 text-sm text-gray-900 focus:outline-none focus:ring-1 transition-all ${
-              errors.email
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/30'
-                : 'border-gray-200 focus:border-blue-500 focus:ring-blue-500/30'
-            }`}
             placeholder="email@exemplo.com"
+            error={errors.email}
           />
-          {errors.email && (
-            <p className="mt-1 text-xs text-red-600">{errors.email}</p>
-          )}
-        </div>
 
-        <div>
-          <label htmlFor="add-member-product" className="mb-1 block text-sm font-medium text-gray-700">
-            Produto (opcional)
-          </label>
-          <select
+          <Select
             id="add-member-product"
+            label="Produto (opcional)"
             value={productId}
             onChange={(e) => setProductId(e.target.value)}
-            className="h-10 w-full rounded-lg border border-gray-200 px-3 text-sm text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all"
           >
             <option value="">Nenhum produto</option>
             {products.map((p) => (
               <option key={p.id} value={p.id}>{p.title}</option>
             ))}
-          </select>
-        </div>
+          </Select>
 
-        <div className="flex justify-end gap-2 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-          >
-            {submitting ? 'Criando...' : 'Criar membro'}
-          </button>
-        </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+            >
+              {submitting ? 'Criando...' : 'Criar membro'}
+            </button>
+          </div>
       </form>
     </Dialog>
   );

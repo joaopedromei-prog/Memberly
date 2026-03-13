@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 import { BannerGenerator } from '@/components/admin/BannerGenerator';
 import { apiRequest, ApiRequestError } from '@/lib/utils/api';
 import { useToastStore } from '@/stores/toast-store';
@@ -74,61 +76,36 @@ export function ModuleForm({
 
   const formContent = (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label
-          htmlFor="module-title"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Título *
-        </label>
-        <input
-          id="module-title"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="Ex: Módulo 1 — Fundamentos"
-        />
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-      </div>
+      <Input
+        id="module-title"
+        label="Título *"
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Ex: Módulo 1 — Fundamentos"
+        error={error}
+      />
 
-      <div>
-        <label
-          htmlFor="module-description"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Descrição
-        </label>
-        <textarea
-          id="module-description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={3}
-          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="Descreva o módulo..."
-        />
-      </div>
+      <Textarea
+        id="module-description"
+        label="Descrição"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        rows={3}
+        placeholder="Descreva o módulo..."
+      />
 
-      <div>
-        <label
-          htmlFor="module-drip"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Disponível após X dias da compra
-        </label>
-        <input
-          id="module-drip"
-          type="number"
-          min="0"
-          value={dripDays}
-          onChange={(e) => setDripDays(e.target.value)}
-          className="mt-1 block w-32 rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="0"
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          Deixe vazio para disponibilizar imediatamente. Aulas herdam este valor como mínimo.
-        </p>
-      </div>
+      <Input
+        id="module-drip"
+        label="Disponível após X dias da compra"
+        type="number"
+        min={0}
+        value={dripDays}
+        onChange={(e) => setDripDays(e.target.value)}
+        className="w-32"
+        placeholder="0"
+        helperText="Deixe vazio para disponibilizar imediatamente. Aulas herdam este valor como mínimo."
+      />
 
       <div>
         <label className="block text-sm font-medium text-gray-700">

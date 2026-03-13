@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { Input } from '@/components/ui/Input';
 import { useToastStore } from '@/stores/toast-store';
 
 interface BrandingSettingsProps {
@@ -44,16 +45,14 @@ export function BrandingSettings({ initialName, initialColor, initialLogo }: Bra
 
         <div className="border-t border-slate-200 mt-4 pt-5 space-y-5">
           {/* Platform Name */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Nome</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full h-11 rounded-xl border border-slate-200 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-            />
-            <p className="text-xs text-slate-400 mt-1">Exibido no header e emails</p>
-          </div>
+          <Input
+            label="Nome"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="h-11 rounded-xl border-slate-200 focus:ring-2 focus:ring-blue-500/20"
+            helperText="Exibido no header e emails"
+          />
 
           {/* Logo */}
           <div>
@@ -95,11 +94,11 @@ export function BrandingSettings({ initialName, initialColor, initialLogo }: Bra
                   className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
                 />
               </div>
-              <input
+              <Input
                 type="text"
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
-                className="w-32 h-11 rounded-xl border border-slate-200 px-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all uppercase"
+                className="w-32 h-11 rounded-xl border-slate-200 font-mono text-sm focus:ring-2 focus:ring-blue-500/20 uppercase"
               />
               <div className="flex gap-2 ml-4 items-center">
                 <div

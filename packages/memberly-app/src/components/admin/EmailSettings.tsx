@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown } from 'lucide-react';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 import { useToastStore } from '@/stores/toast-store';
 import { sanitizeHtml } from '@/lib/utils/sanitize';
 
@@ -79,30 +81,24 @@ export function EmailSettings({ initialActive, initialSubject, initialBody, plat
 
         <div className="mt-5 space-y-5">
           {/* Subject */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Assunto</label>
-            <input
-              type="text"
-              value={emailSubject}
-              onChange={(e) => setEmailSubject(e.target.value)}
-              className="w-full h-11 rounded-xl border border-slate-200 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-            />
-            <p className="text-xs text-slate-400 mt-1">Use {"{{product_name}}"} para inserir o nome do produto</p>
-          </div>
+          <Input
+            label="Assunto"
+            type="text"
+            value={emailSubject}
+            onChange={(e) => setEmailSubject(e.target.value)}
+            className="h-11 rounded-xl border-slate-200 focus:ring-2 focus:ring-blue-500/20"
+            helperText={`Use {{product_name}} para inserir o nome do produto`}
+          />
 
           {/* Body */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Corpo do Email</label>
-            <textarea
-              rows={8}
-              value={emailBody}
-              onChange={(e) => setEmailBody(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 px-4 py-3 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-y"
-            />
-            <p className="text-xs text-slate-400 mt-1">
-              Variáveis: {"{{member_name}}"}, {"{{product_name}}"}, {"{{login_url}}"}, {"{{platform_name}}"}
-            </p>
-          </div>
+          <Textarea
+            label="Corpo do Email"
+            rows={8}
+            value={emailBody}
+            onChange={(e) => setEmailBody(e.target.value)}
+            className="rounded-xl border-slate-200 font-mono text-sm focus:ring-2 focus:ring-blue-500/20 resize-y"
+            helperText={`Variáveis: {{member_name}}, {{product_name}}, {{login_url}}, {{platform_name}}`}
+          />
 
           {/* Preview toggle */}
           <div className="mt-5">

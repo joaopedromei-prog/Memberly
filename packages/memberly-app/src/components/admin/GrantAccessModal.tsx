@@ -5,6 +5,7 @@ import { apiRequest } from '@/lib/utils/api';
 import { useToastStore } from '@/stores/toast-store';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
+import { Select } from '@/components/ui/Select';
 
 interface GrantAccessModalProps {
   open: boolean;
@@ -53,10 +54,9 @@ export function GrantAccessModal({
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <select
+          <Select
             value={selectedProductId}
             onChange={(e) => setSelectedProductId(e.target.value)}
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           >
             <option value="">Selecione um produto</option>
@@ -65,7 +65,7 @@ export function GrantAccessModal({
                 {p.title}
               </option>
             ))}
-          </select>
+          </Select>
 
           <div className="flex justify-end gap-3">
             <Button variant="outline" type="button" onClick={onClose} disabled={isLoading}>

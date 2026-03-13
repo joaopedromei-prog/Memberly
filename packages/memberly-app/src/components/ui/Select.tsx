@@ -1,14 +1,14 @@
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils/cn';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
   helperText?: string;
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
-  function Input({ className, label, error, helperText, id, ...props }, ref) {
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(
+  function Select({ className, label, error, helperText, id, children, ...props }, ref) {
     return (
       <div className="w-full">
         {label && (
@@ -16,7 +16,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <input
+        <select
           ref={ref}
           id={id}
           className={cn(
@@ -27,7 +27,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             className
           )}
           {...props}
-        />
+        >
+          {children}
+        </select>
         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
         {helperText && !error && <p className="mt-1 text-xs text-gray-500">{helperText}</p>}
       </div>

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 import { BannerGenerator } from '@/components/admin/BannerGenerator';
 import { slugify } from '@/lib/utils/slugify';
 import { apiRequest, ApiRequestError } from '@/lib/utils/api';
@@ -85,22 +87,15 @@ export function ProductForm({ product, embedded }: ProductFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-          Título *
-        </label>
-        <input
-          id="title"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="Ex: Protocolo Saúde Total"
-        />
-        {errors.title && (
-          <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-        )}
-      </div>
+      <Input
+        id="title"
+        label="Título *"
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Ex: Protocolo Saúde Total"
+        error={errors.title}
+      />
 
       <div>
         <button
@@ -119,43 +114,32 @@ export function ProductForm({ product, embedded }: ProductFormProps) {
         </button>
         {showAdvanced && (
           <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <label htmlFor="slug" className="block text-sm font-medium text-gray-700">
-              Slug (URL)
-            </label>
-            <input
+            <Input
               id="slug"
+              label="Slug (URL)"
               type="text"
               value={slug}
               onChange={(e) => {
                 setSlug(e.target.value);
                 setSlugManuallyEdited(true);
               }}
-              className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="bg-white"
               placeholder="protocolo-saude-total"
+              error={errors.slug}
+              helperText="Gerado automaticamente do título. Edite apenas se necessário."
             />
-            {errors.slug && (
-              <p className="mt-1 text-sm text-red-600">{errors.slug}</p>
-            )}
-            <p className="mt-1 text-xs text-gray-400">
-              Gerado automaticamente do título. Edite apenas se necessário.
-            </p>
           </div>
         )}
       </div>
 
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-          Descrição
-        </label>
-        <textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={4}
-          className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="Descreva o produto..."
-        />
-      </div>
+      <Textarea
+        id="description"
+        label="Descrição"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        rows={4}
+        placeholder="Descreva o produto..."
+      />
 
       <div>
         <label className="block text-sm font-medium text-gray-700">Banner</label>

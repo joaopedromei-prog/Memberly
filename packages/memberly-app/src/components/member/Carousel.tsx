@@ -61,9 +61,10 @@ export function Carousel({ title, icon, children }: CarouselProps) {
         <div
           ref={scrollRef}
           onScroll={updateScrollState}
-          className="scrollbar-hide flex gap-3 overflow-x-auto snap-x snap-mandatory px-4 sm:px-6 lg:px-16 pb-8 pt-4 -mt-4"
+          className="scrollbar-hide flex gap-3 overflow-x-auto snap-x snap-mandatory pl-4 sm:pl-6 lg:pl-16 pb-8 pt-4 -mt-4"
         >
           {children}
+          <div className="min-w-4 sm:min-w-6 lg:min-w-16 flex-shrink-0" aria-hidden="true" />
         </div>
 
         {canScrollRight && (
