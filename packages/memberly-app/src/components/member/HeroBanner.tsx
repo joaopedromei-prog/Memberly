@@ -99,7 +99,7 @@ export function HeroBanner({ items }: HeroBannerProps) {
           >
             <motion.h1
               variants={slideUpVariants}
-              className="text-[28px] md:text-[48px] font-bold text-white leading-tight drop-shadow-lg mb-3"
+              className="text-subtitle md:text-display font-bold text-white leading-tight drop-shadow-lg mb-3"
             >
               {item.title}
             </motion.h1>

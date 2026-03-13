@@ -16,6 +16,16 @@
   --color-dark-border: #333333;
   --color-primary: #e50914;
   --color-primary-hover: #f40612;
+  --color-text-muted: #B3B3B3;
+  --color-accent-success: #46D369;
+  --color-accent-warning: #F59E0B;
+  --color-admin-primary: #2563EB;
+  --color-admin-primary-hover: #1D4ED8;
+  --color-dark-bg-deep: #0A0A0A;
+  --color-dark-input: #1F1F1F;
+  --font-size-display: 48px;
+  --font-size-hero: 40px;
+  --font-size-subtitle: 28px;
   --animate-shimmer: shimmer 1.5s linear infinite;
 }
 

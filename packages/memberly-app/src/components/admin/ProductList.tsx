@@ -203,7 +203,7 @@ export function ProductList({ products: initialProducts }: ProductListProps) {
           <h1 className="text-2xl font-bold text-slate-900">Produtos</h1>
           <Link
             href="/admin/products/new"
-            className="inline-flex items-center justify-center gap-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-lg px-4 h-10 font-medium text-sm transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md hover:shadow-blue-500/20 w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2 bg-admin-primary hover:bg-admin-primary-hover text-white rounded-lg px-4 h-10 font-medium text-sm transition-all duration-200 hover:-translate-y-[1px] hover:shadow-md hover:shadow-blue-500/20 w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             Novo Produto
@@ -218,7 +218,7 @@ export function ProductList({ products: initialProducts }: ProductListProps) {
               placeholder="Buscar produtos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 bg-white border border-slate-200 rounded-lg pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]/30 transition-shadow"
+              className="w-full h-10 bg-white border border-slate-200 rounded-lg pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-admin-primary focus:ring-1 focus:ring-admin-primary/30 transition-shadow"
             />
           </div>
 
@@ -226,7 +226,7 @@ export function ProductList({ products: initialProducts }: ProductListProps) {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-              className="appearance-none w-full sm:w-44 h-10 bg-white border border-slate-200 rounded-lg pl-3 pr-10 text-sm text-slate-700 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]/30 cursor-pointer"
+              className="appearance-none w-full sm:w-44 h-10 bg-white border border-slate-200 rounded-lg pl-3 pr-10 text-sm text-slate-700 focus:outline-none focus:border-admin-primary focus:ring-1 focus:ring-admin-primary/30 cursor-pointer"
             >
               <option value="all">Todos os status</option>
               <option value="published">Publicados</option>
@@ -291,7 +291,7 @@ export function ProductList({ products: initialProducts }: ProductListProps) {
                           if (input) input.indeterminate = isSomeSelected;
                         }}
                         onChange={handleToggleSelectAll}
-                        className="w-4 h-4 rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB] cursor-pointer accent-[#2563EB]"
+                        className="w-4 h-4 rounded border-slate-300 text-admin-primary focus:ring-admin-primary cursor-pointer accent-admin-primary"
                       />
                     </th>
                     <th className="py-3.5 px-6 text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -327,7 +327,7 @@ export function ProductList({ products: initialProducts }: ProductListProps) {
                           type="checkbox"
                           checked={selectedIds.has(product.id)}
                           onChange={() => handleToggleSelect(product.id)}
-                          className="w-4 h-4 rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB] cursor-pointer accent-[#2563EB]"
+                          className="w-4 h-4 rounded border-slate-300 text-admin-primary focus:ring-admin-primary cursor-pointer accent-admin-primary"
                         />
                       </td>
                       <td className="py-4 px-6">
@@ -345,7 +345,7 @@ export function ProductList({ products: initialProducts }: ProductListProps) {
                             />
                           )}
                           <div>
-                            <div className="font-medium text-sm text-slate-900 group-hover:text-[#2563EB] transition-colors">
+                            <div className="font-medium text-sm text-slate-900 group-hover:text-admin-primary transition-colors">
                               {product.title}
                             </div>
                             <div className="text-xs text-slate-400 mt-0.5 hidden lg:block">
@@ -384,7 +384,7 @@ export function ProductList({ products: initialProducts }: ProductListProps) {
                           <Link
                             href={`/admin/products/${product.id}`}
                             title="Editar"
-                            className="w-8 h-8 flex items-center justify-center rounded-md text-[#2563EB] hover:bg-blue-50 transition-colors"
+                            className="w-8 h-8 flex items-center justify-center rounded-md text-admin-primary hover:bg-blue-50 transition-colors"
                           >
                             <Pencil className="w-4 h-4" />
                           </Link>
@@ -428,7 +428,7 @@ export function ProductList({ products: initialProducts }: ProductListProps) {
                       type="checkbox"
                       checked={selectedIds.has(product.id)}
                       onChange={() => handleToggleSelect(product.id)}
-                      className="mt-1 w-4 h-4 rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB] cursor-pointer accent-[#2563EB] shrink-0"
+                      className="mt-1 w-4 h-4 rounded border-slate-300 text-admin-primary focus:ring-admin-primary cursor-pointer accent-admin-primary shrink-0"
                     />
                     {product.banner_url ? (
                       <img
@@ -445,7 +445,7 @@ export function ProductList({ products: initialProducts }: ProductListProps) {
                     <div className="flex-1 min-w-0">
                       <Link
                         href={`/admin/products/${product.id}`}
-                        className="font-medium text-sm text-slate-900 truncate block hover:text-[#2563EB] transition-colors"
+                        className="font-medium text-sm text-slate-900 truncate block hover:text-admin-primary transition-colors"
                       >
                         {product.title}
                       </Link>
@@ -481,7 +481,7 @@ export function ProductList({ products: initialProducts }: ProductListProps) {
                       </Link>
                       <Link
                         href={`/admin/products/${product.id}`}
-                        className="w-8 h-8 flex items-center justify-center rounded-md text-[#2563EB] hover:bg-blue-50 transition-colors"
+                        className="w-8 h-8 flex items-center justify-center rounded-md text-admin-primary hover:bg-blue-50 transition-colors"
                       >
                         <Pencil className="w-4 h-4" />
                       </Link>

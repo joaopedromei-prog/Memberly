@@ -64,7 +64,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-[#0A0A0A] overflow-hidden font-sans text-white selection:bg-primary/30">
+    <div className="relative min-h-screen w-full bg-dark-bg-deep overflow-hidden font-sans text-white selection:bg-primary/30">
       {/* Noise Overlay */}
       <div
         className="pointer-events-none absolute inset-0 z-10 opacity-[0.03] mix-blend-overlay"
@@ -135,7 +135,7 @@ export default function LoginPage() {
             opacity: { duration: 0.8, delay: 0.3, ease: [0.25, 0.4, 0, 1] as [number, number, number, number] },
             x: { duration: 0.5 },
           }}
-          className="w-full max-w-md rounded-2xl border border-[#1F1F1F] bg-dark-bg/80 p-8 md:p-10 shadow-2xl shadow-black/50 backdrop-blur-xl"
+          className="w-full max-w-md rounded-2xl border border-dark-input bg-dark-bg/80 p-8 md:p-10 shadow-2xl shadow-black/50 backdrop-blur-xl"
         >
           {/* Brand */}
           <motion.div
@@ -172,7 +172,7 @@ export default function LoginPage() {
                   placeholder="seu@email.com"
                   required
                   autoComplete="email"
-                  className={`h-12 w-full rounded-xl border bg-[#0A0A0A] px-4 text-sm text-white placeholder-neutral-600 transition-colors duration-200 focus:outline-none focus:ring-1 ${
+                  className={`h-12 w-full rounded-xl border bg-dark-bg-deep px-4 text-sm text-white placeholder-neutral-600 transition-colors duration-200 focus:outline-none focus:ring-1 ${
                     error
                       ? 'border-red-500 focus:border-red-500 focus:ring-red-500/30'
                       : 'border-dark-card focus:border-primary focus:ring-primary/30'
@@ -202,7 +202,7 @@ export default function LoginPage() {
                   placeholder="Sua senha"
                   required
                   autoComplete="current-password"
-                  className={`h-12 w-full rounded-xl border bg-[#0A0A0A] pl-4 pr-12 text-sm text-white placeholder-neutral-600 transition-colors duration-200 focus:outline-none focus:ring-1 ${
+                  className={`h-12 w-full rounded-xl border bg-dark-bg-deep pl-4 pr-12 text-sm text-white placeholder-neutral-600 transition-colors duration-200 focus:outline-none focus:ring-1 ${
                     error
                       ? 'border-red-500 focus:border-red-500 focus:ring-red-500/30'
                       : 'border-dark-card focus:border-primary focus:ring-primary/30'
@@ -284,7 +284,7 @@ export default function LoginPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 1.36 }}
-            className="mt-8 border-t border-[#1F1F1F] pt-6 text-center"
+            className="mt-8 border-t border-dark-input pt-6 text-center"
           >
             <p className="text-xs text-neutral-600">
               Acesso exclusivo para membros

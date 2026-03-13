@@ -186,7 +186,7 @@ export function LessonInfo({
           aria-pressed={completed}
           className={`flex min-h-[44px] items-center gap-2 rounded px-5 text-sm font-semibold transition-colors duration-200 ${
             completed
-              ? 'bg-[#46D369] text-black'
+              ? 'bg-accent-success text-black'
               : 'bg-dark-surface text-white hover:bg-dark-card'
           }`}
         >

@@ -78,7 +78,7 @@ export function CommentForm({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder={isReply ? 'Escreva sua resposta...' : 'Escreva sua dúvida...'}
-        className={`w-full resize-none rounded border bg-[#1F1F1F] px-3 py-2 text-base text-white placeholder-[#B3B3B3] transition-colors focus:border-primary focus:outline-none ${
+        className={`w-full resize-none rounded border bg-dark-input px-3 py-2 text-base text-white placeholder-text-muted transition-colors focus:border-primary focus:outline-none ${
           isOverLimit ? 'border-red-500' : 'border-dark-border'
         } ${isReply ? 'min-h-[60px]' : 'min-h-[60px] sm:min-h-[60px]'}`}
         style={{ minHeight: isReply ? undefined : undefined }}
@@ -105,7 +105,7 @@ export function CommentForm({
             <button
               type="button"
               onClick={onCancel}
-              className="min-h-[44px] rounded px-4 py-2 text-sm text-[#B3B3B3] transition-colors hover:text-white"
+              className="min-h-[44px] rounded px-4 py-2 text-sm text-text-muted transition-colors hover:text-white"
             >
               Cancelar
             </button>

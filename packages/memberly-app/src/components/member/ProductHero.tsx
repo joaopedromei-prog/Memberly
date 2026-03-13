@@ -92,7 +92,7 @@ export function ProductHero({
           </motion.div>
         )}
         {/* Gradient overlay */}
-        <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/60 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-dark-bg-deep via-dark-bg-deep/60 to-transparent" />
       </div>
 
       {/* Content overlay */}
@@ -105,7 +105,7 @@ export function ProductHero({
         <div className="mx-auto max-w-7xl">
           <motion.h1
             variants={itemVariants}
-            className="text-[28px] xl:text-[40px] font-bold text-white leading-tight"
+            className="text-subtitle xl:text-hero font-bold text-white leading-tight"
           >
             {title}
           </motion.h1>
@@ -114,13 +114,13 @@ export function ProductHero({
             variants={itemVariants}
             className="flex items-center gap-2 sm:gap-4 mt-2 flex-wrap"
           >
-            <span className="text-[14px] text-[#B3B3B3]">
+            <span className="text-[14px] text-text-muted">
               {totalModules} módulos · {totalLessons} aulas
             </span>
             {completedLessons > 0 && (
               <>
                 <span className="text-[14px] text-[#737373]">·</span>
-                <span className="text-[14px] text-[#46D369] font-medium">
+                <span className="text-[14px] text-accent-success font-medium">
                   {progress}% concluído
                 </span>
                 <div className="hidden sm:block w-24 h-1.5 rounded-full bg-dark-card overflow-hidden ml-2">
@@ -132,7 +132,7 @@ export function ProductHero({
                       delay: shouldReduceMotion ? 0 : 0.8,
                       ease: 'easeOut',
                     }}
-                    className="h-full bg-[#46D369]"
+                    className="h-full bg-accent-success"
                   />
                 </div>
               </>
@@ -143,7 +143,7 @@ export function ProductHero({
           {description && (
             <motion.div variants={itemVariants} className="mt-4 max-w-2xl">
               <p
-                className={`text-[14px] text-[#B3B3B3] leading-relaxed transition-all duration-200 ease-out ${
+                className={`text-[14px] text-text-muted leading-relaxed transition-all duration-200 ease-out ${
                   expanded ? '' : 'line-clamp-2'
                 }`}
               >

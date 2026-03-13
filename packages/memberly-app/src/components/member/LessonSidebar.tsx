@@ -47,7 +47,7 @@ export function LessonSidebar({
               className="relative flex min-h-[44px] cursor-not-allowed items-center gap-3 px-4 py-3 text-sm text-neutral-600"
             >
               <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center">
-                <Lock className="h-4 w-4 text-[#F59E0B]" />
+                <Lock className="h-4 w-4 text-accent-warning" />
               </span>
               <span className="flex-1 truncate">
                 <span className="text-neutral-700">{index + 1}. </span>
@@ -89,7 +89,7 @@ export function LessonSidebar({
               {isCurrent ? (
                 <Play className="h-4 w-4 fill-primary text-primary" />
               ) : lesson.completed ? (
-                <Check className="h-4 w-4 text-[#46D369]" />
+                <Check className="h-4 w-4 text-accent-success" />
               ) : (
                 <Circle className="h-4 w-4 text-neutral-600" />
               )}
@@ -130,7 +130,7 @@ export function LessonSidebar({
           </div>
           <div className="mt-3 h-1 overflow-hidden rounded-full bg-dark-card">
             <div
-              className="h-full bg-[#46D369] transition-all duration-500"
+              className="h-full bg-accent-success transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>

@@ -84,7 +84,7 @@ export function CommentItem({ comment, lessonId, onReplyAdded }: CommentItemProp
             <button
               onClick={() => setShowReplyForm(!showReplyForm)}
               aria-expanded={showReplyForm}
-              className="mt-1 min-h-[44px] text-sm text-[#B3B3B3] transition-colors hover:text-white"
+              className="mt-1 min-h-[44px] text-sm text-text-muted transition-colors hover:text-white"
             >
               Responder
             </button>

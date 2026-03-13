@@ -16,7 +16,7 @@ export function ProgressBar({ value, showLabel, className }: ProgressBarProps) {
         <div
           className={cn(
             'h-full rounded-full transition-all duration-500 ease-in-out',
-            isComplete ? 'bg-[#46D369]' : 'bg-primary'
+            isComplete ? 'bg-accent-success' : 'bg-primary'
           )}
           style={{ width: `${clamped}%` }}
         />

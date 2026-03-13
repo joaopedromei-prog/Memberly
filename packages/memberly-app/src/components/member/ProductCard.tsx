@@ -47,7 +47,7 @@ export function ProductCard({ slug, title, bannerUrl, progress }: ProductCardPro
         )}
 
         {isComplete && (
-          <div className="absolute top-2 right-2 bg-[#46D369] text-black text-[10px] sm:text-xs font-semibold rounded px-2 py-0.5 flex items-center gap-1 shadow-md">
+          <div className="absolute top-2 right-2 bg-accent-success text-black text-[10px] sm:text-xs font-semibold rounded px-2 py-0.5 flex items-center gap-1 shadow-md">
             <Check size={12} strokeWidth={3} /> 100%
           </div>
         )}
@@ -67,7 +67,7 @@ export function ProductCard({ slug, title, bannerUrl, progress }: ProductCardPro
           <div
             className={cn(
               'h-full rounded-full transition-all duration-700 ease-out',
-              isComplete ? 'bg-[#46D369]' : 'bg-primary'
+              isComplete ? 'bg-accent-success' : 'bg-primary'
             )}
             style={{ width: `${clamped}%` }}
           />

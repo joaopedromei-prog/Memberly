@@ -127,7 +127,7 @@ export function CommentSection({ lessonId }: CommentSectionProps) {
           <button
             onClick={loadMore}
             disabled={loadingMore}
-            className="min-h-[44px] rounded border border-dark-border px-6 py-2 text-sm text-[#B3B3B3] transition-colors hover:bg-[#1F1F1F] hover:text-white disabled:opacity-50"
+            className="min-h-[44px] rounded border border-dark-border px-6 py-2 text-sm text-text-muted transition-colors hover:bg-dark-input hover:text-white disabled:opacity-50"
           >
             {loadingMore ? 'Carregando...' : 'Carregar mais comentários'}
           </button>

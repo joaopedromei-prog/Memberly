@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0A0A0A] font-sans text-white selection:bg-primary/30">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-dark-bg-deep font-sans text-white selection:bg-primary/30">
       {/* Background Layer */}
       <div className="pointer-events-none absolute inset-0">
         <motion.div
@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
           initial={{ y: 30, scale: 0.97, opacity: 0 }}
           animate={{ y: 0, scale: 1, opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-md rounded-2xl border border-[#1F1F1F] bg-dark-bg/80 p-8 shadow-2xl backdrop-blur-xl sm:p-10"
+          className="w-full max-w-md rounded-2xl border border-dark-input bg-dark-bg/80 p-8 shadow-2xl backdrop-blur-xl sm:p-10"
         >
           {/* Brand */}
           <div className="mb-8 text-center">
@@ -181,7 +181,7 @@ export default function ForgotPasswordPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu@email.com"
                       autoComplete="email"
-                      className="h-12 w-full rounded-xl border border-dark-card bg-[#0A0A0A] px-4 text-white transition-all duration-200 placeholder:text-neutral-600 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30"
+                      className="h-12 w-full rounded-xl border border-dark-card bg-dark-bg-deep px-4 text-white transition-all duration-200 placeholder:text-neutral-600 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30"
                       required
                     />
                     {error && (
@@ -239,7 +239,7 @@ export default function ForgotPasswordPage() {
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.1 }}
-                      className="absolute inset-0 rounded-full border border-[#46D369]/30 bg-[#46D369]/10"
+                      className="absolute inset-0 rounded-full border border-accent-success/30 bg-accent-success/10"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <svg
@@ -249,7 +249,7 @@ export default function ForgotPasswordPage() {
                         strokeWidth="3"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className="h-8 w-8 text-[#46D369]"
+                        className="h-8 w-8 text-accent-success"
                       >
                         <motion.polyline
                           points="20 6 9 17 4 12"

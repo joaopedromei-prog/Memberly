@@ -80,7 +80,7 @@ export function ModuleCard({
         />
       ) : (
         <div
-          className={`absolute inset-0 bg-gradient-to-br ${isLocked ? 'from-[#1f1f1f] to-[#0a0a0a]' : gradient}`}
+          className={`absolute inset-0 bg-gradient-to-br ${isLocked ? 'from-dark-input to-dark-bg-deep' : gradient}`}
         />
       )}
 
@@ -89,7 +89,7 @@ export function ModuleCard({
 
       {/* Completed badge */}
       {isComplete && !isLocked && (
-        <div className="absolute top-3 right-3 bg-[#46D369] text-[#0A0A0A] text-xs font-semibold rounded-md px-2.5 py-1 flex items-center gap-1 z-20">
+        <div className="absolute top-3 right-3 bg-accent-success text-dark-bg-deep text-xs font-semibold rounded-md px-2.5 py-1 flex items-center gap-1 z-20">
           <Check className="w-3 h-3" /> Concluído
         </div>
       )}
@@ -97,7 +97,7 @@ export function ModuleCard({
       {/* Lock icon */}
       {isLocked && (
         <div className="absolute top-3 right-3 z-20">
-          <Lock className="w-6 h-6 text-[#F59E0B]" />
+          <Lock className="w-6 h-6 text-accent-warning" />
         </div>
       )}
 
@@ -108,7 +108,7 @@ export function ModuleCard({
         </h3>
         {!isLocked && (
           <>
-            <p className="text-[12px] text-[#B3B3B3] mt-1.5">
+            <p className="text-[12px] text-text-muted mt-1.5">
               {completedLessons}/{totalLessons} aulas
             </p>
             {totalLessons > 0 && (
@@ -122,7 +122,7 @@ export function ModuleCard({
                     delay: shouldReduceMotion ? 0 : 0.5,
                     ease: 'easeOut',
                   }}
-                  className="h-full bg-[#46D369]"
+                  className="h-full bg-accent-success"
                 />
               </div>
             )}
