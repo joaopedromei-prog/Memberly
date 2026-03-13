@@ -14,6 +14,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { LessonForm } from '@/components/admin/LessonForm';
+import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { apiRequest, ApiRequestError } from '@/lib/utils/api';
 import { useToastStore } from '@/stores/toast-store';
@@ -149,27 +150,33 @@ function LessonRow({
 
         {/* Action buttons */}
         <div className="md:w-28 flex items-center justify-end gap-1 shrink-0">
-          <button
+          <Button
+            variant="icon"
+            size="sm"
             title="Duplicar"
             onClick={onDuplicate}
-            className="w-8 h-8 flex items-center justify-center rounded-md text-purple-500 hover:bg-purple-50 transition-colors"
+            className="text-purple-500 hover:bg-purple-50"
           >
             <Copy size={16} />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="icon"
+            size="sm"
             title="Editar"
             onClick={onEdit}
-            className="w-8 h-8 flex items-center justify-center rounded-md text-blue-600 hover:bg-blue-50 transition-colors"
+            className="text-blue-600 hover:bg-blue-50"
           >
             <Pencil size={16} />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="icon"
+            size="sm"
             title="Excluir"
             onClick={onDelete}
-            className="w-8 h-8 flex items-center justify-center rounded-md text-red-500 hover:bg-red-50 transition-colors"
+            className="text-red-500 hover:bg-red-50"
           >
             <Trash2 size={16} />
-          </button>
+          </Button>
         </div>
       </div>
     </Reorder.Item>

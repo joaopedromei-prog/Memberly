@@ -5,6 +5,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useEffect } from 'react';
+import { Button } from '@/components/ui/Button';
 
 interface RichTextEditorProps {
   content: string;
@@ -24,18 +25,20 @@ function ToolbarButton({
   title: string;
 }) {
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      size="sm"
       onClick={onClick}
       title={title}
-      className={`inline-flex h-8 min-w-[32px] items-center justify-center rounded px-2 text-sm font-medium transition-colors ${
+      className={`min-w-[32px] rounded px-2 ${
         isActive
-          ? 'bg-blue-600 text-white'
-          : 'text-gray-600 hover:bg-gray-100'
+          ? 'bg-blue-600 text-white hover:bg-blue-700'
+          : 'text-gray-600'
       }`}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 

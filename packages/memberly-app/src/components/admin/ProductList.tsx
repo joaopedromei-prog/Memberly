@@ -15,6 +15,7 @@ import {
 import { ProductStatusBadge } from '@/components/admin/ProductStatusBadge';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DuplicateProductDialog } from '@/components/admin/DuplicateProductDialog';
+import { Button } from '@/components/ui/Button';
 import { apiRequest, ApiRequestError } from '@/lib/utils/api';
 import { useToastStore } from '@/stores/toast-store';
 
@@ -395,20 +396,24 @@ export function ProductList({ products: initialProducts }: ProductListProps) {
                           >
                             <Pencil className="w-4 h-4" />
                           </Link>
-                          <button
+                          <Button
+                            variant="icon"
+                            size="sm"
                             title="Duplicar"
                             onClick={() => setDuplicateTarget(product)}
-                            className="w-8 h-8 flex items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 transition-colors"
+                            className="text-slate-500 hover:bg-slate-100"
                           >
                             <Copy className="w-4 h-4" />
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            variant="icon"
+                            size="sm"
                             title="Excluir"
                             onClick={() => setDeleteTarget(product)}
-                            className="w-8 h-8 flex items-center justify-center rounded-md text-red-500 hover:bg-red-50 transition-colors"
+                            className="text-red-500 hover:bg-red-50"
                           >
                             <Trash2 className="w-4 h-4" />
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -488,18 +493,22 @@ export function ProductList({ products: initialProducts }: ProductListProps) {
                       >
                         <Pencil className="w-4 h-4" />
                       </Link>
-                      <button
+                      <Button
+                        variant="icon"
+                        size="sm"
                         onClick={() => setDuplicateTarget(product)}
-                        className="w-8 h-8 flex items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 transition-colors"
+                        className="text-slate-500 hover:bg-slate-100"
                       >
                         <Copy className="w-4 h-4" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="icon"
+                        size="sm"
                         onClick={() => setDeleteTarget(product)}
-                        className="w-8 h-8 flex items-center justify-center rounded-md text-red-500 hover:bg-red-50 transition-colors"
+                        className="text-red-500 hover:bg-red-50"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
