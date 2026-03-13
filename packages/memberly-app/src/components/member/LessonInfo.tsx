@@ -32,7 +32,7 @@ interface LessonInfoProps {
 
 function getAttachmentIcon(type: string) {
   if (type === 'application/pdf') {
-    return <FileText className="h-4 w-4 flex-shrink-0 text-[#E50914]" />;
+    return <FileText className="h-4 w-4 flex-shrink-0 text-primary" />;
   }
   if (type.startsWith('image/')) {
     return <ImageIcon className="h-4 w-4 flex-shrink-0 text-blue-500" />;
@@ -136,7 +136,7 @@ export function LessonInfo({
           whileTap={{ scale: 0.9 }}
           onClick={toggleBookmark}
           aria-label={bookmarked ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-          className="flex-shrink-0 rounded-full p-2 transition-colors hover:bg-[#1A1A1A]"
+          className="flex-shrink-0 rounded-full p-2 transition-colors hover:bg-dark-surface"
         >
           <motion.div
             animate={bookmarked ? { scale: [0.8, 1.1, 1] } : { scale: 1 }}
@@ -145,7 +145,7 @@ export function LessonInfo({
             <Heart
               className={`h-6 w-6 ${
                 bookmarked
-                  ? 'fill-[#E50914] text-[#E50914]'
+                  ? 'fill-primary text-primary'
                   : 'text-neutral-500 hover:text-neutral-300'
               }`}
             />
@@ -170,7 +170,7 @@ export function LessonInfo({
           {description.length > 200 && (
             <button
               onClick={() => setExpanded(!expanded)}
-              className="mt-1 text-xs font-medium text-[#E50914] transition-colors hover:text-[#F40612]"
+              className="mt-1 text-xs font-medium text-primary transition-colors hover:text-primary-hover"
             >
               {expanded ? 'ver menos' : 'ver mais'}
             </button>
@@ -187,7 +187,7 @@ export function LessonInfo({
           className={`flex min-h-[44px] items-center gap-2 rounded px-5 text-sm font-semibold transition-colors duration-200 ${
             completed
               ? 'bg-[#46D369] text-black'
-              : 'bg-[#1A1A1A] text-white hover:bg-[#2A2A2A]'
+              : 'bg-dark-surface text-white hover:bg-dark-card'
           }`}
         >
           {loading ? (
@@ -222,7 +222,7 @@ export function LessonInfo({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + index * 0.05 }}
-                className="flex items-center gap-3 rounded-lg border border-[#333333] bg-[#1A1A1A] p-3"
+                className="flex items-center gap-3 rounded-lg border border-dark-border bg-dark-surface p-3"
               >
                 {getAttachmentIcon(att.type)}
                 <span className="flex-1 truncate text-sm text-neutral-300">
@@ -237,7 +237,7 @@ export function LessonInfo({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + (pdfAttachments.length + index) * 0.05 }}
-                className="flex items-center gap-3 rounded-lg border border-[#333333] bg-[#1A1A1A] p-3"
+                className="flex items-center gap-3 rounded-lg border border-dark-border bg-dark-surface p-3"
               >
                 {getAttachmentIcon(att.type)}
                 <span className="flex-1 truncate text-sm text-neutral-300">
@@ -246,7 +246,7 @@ export function LessonInfo({
                 <a
                   href={att.url}
                   download={att.name}
-                  className="flex flex-shrink-0 items-center gap-2 rounded border border-[#333333] bg-[#2A2A2A] px-3 py-1.5 text-sm text-neutral-300 transition-colors hover:bg-[#1A1A1A] hover:text-white"
+                  className="flex flex-shrink-0 items-center gap-2 rounded border border-dark-border bg-dark-card px-3 py-1.5 text-sm text-neutral-300 transition-colors hover:bg-dark-surface hover:text-white"
                 >
                   <Download className="h-4 w-4" />
                   <span className="hidden sm:inline">Baixar</span>

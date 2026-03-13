@@ -49,7 +49,7 @@ export function CommentItem({ comment, lessonId, onReplyAdded }: CommentItemProp
             className="h-8 w-8 flex-shrink-0 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#2A2A2A] text-sm font-semibold text-white">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-dark-card text-sm font-semibold text-white">
             {initial}
           </div>
         )}
@@ -63,7 +63,7 @@ export function CommentItem({ comment, lessonId, onReplyAdded }: CommentItemProp
             {isAdmin && (
               <span
                 className="inline-flex items-center rounded px-2 py-0.5 text-xs font-bold text-white"
-                style={{ backgroundColor: '#E50914' }}
+                style={{ backgroundColor: 'var(--color-primary)' }}
                 aria-label="Administrador"
               >
                 Admin
@@ -107,7 +107,7 @@ export function CommentItem({ comment, lessonId, onReplyAdded }: CommentItemProp
           {comment.replies && comment.replies.length > 0 && (
             <div
               role="list"
-              className="mt-3 space-y-3 border-l border-[#333333] pl-4 sm:pl-6 lg:pl-8"
+              className="mt-3 space-y-3 border-l border-dark-border pl-4 sm:pl-6 lg:pl-8"
             >
               {comment.replies.map((reply) => (
                 <CommentItem

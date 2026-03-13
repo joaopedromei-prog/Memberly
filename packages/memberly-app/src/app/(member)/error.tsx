@@ -15,7 +15,7 @@ export default function MemberError({
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-      <div className="rounded-xl bg-[#1A1A1A] border border-[#333333] p-8 max-w-md">
+      <div className="rounded-xl bg-dark-surface border border-dark-border p-8 max-w-md">
         <h2 className="text-xl font-bold text-white">
           Algo deu errado
         </h2>
@@ -24,7 +24,7 @@ export default function MemberError({
         </p>
         <button
           onClick={reset}
-          className="mt-6 rounded-lg bg-[#E50914] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#F40612] active:scale-95"
+          className="mt-6 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover active:scale-95"
         >
           Tentar novamente
         </button>

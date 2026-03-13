@@ -52,7 +52,7 @@ export function ProductHero({
   return (
     <section className="relative">
       {/* Banner */}
-      <div className="relative aspect-[3/2] md:aspect-[16/9] xl:aspect-[21/9] w-full overflow-hidden bg-[#141414]">
+      <div className="relative aspect-[3/2] md:aspect-[16/9] xl:aspect-[21/9] w-full overflow-hidden bg-dark-bg">
         {bannerUrl ? (
           <motion.div
             className="absolute inset-0"
@@ -123,7 +123,7 @@ export function ProductHero({
                 <span className="text-[14px] text-[#46D369] font-medium">
                   {progress}% concluído
                 </span>
-                <div className="hidden sm:block w-24 h-1.5 rounded-full bg-[#2A2A2A] overflow-hidden ml-2">
+                <div className="hidden sm:block w-24 h-1.5 rounded-full bg-dark-card overflow-hidden ml-2">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
@@ -152,7 +152,7 @@ export function ProductHero({
               {description.length > 150 && (
                 <button
                   onClick={() => setExpanded(!expanded)}
-                  className="text-[12px] text-[#E50914] hover:text-[#F40612] transition-colors font-medium py-2 -my-2 mt-1 inline-block min-h-[44px]"
+                  className="text-[12px] text-primary hover:text-primary-hover transition-colors font-medium py-2 -my-2 mt-1 inline-block min-h-[44px]"
                 >
                   {expanded ? 'ver menos' : 'ver mais'}
                 </button>
@@ -165,7 +165,7 @@ export function ProductHero({
             <motion.div variants={itemVariants} className="mt-6">
               <Link
                 href={nextLessonUrl}
-                className="bg-[#E50914] hover:bg-[#F40612] text-white font-semibold rounded-lg px-6 h-11 w-full sm:w-auto transition-all duration-200 hover:-translate-y-[1px] hover:shadow-lg hover:shadow-[#E50914]/20 inline-flex items-center justify-center min-h-[44px]"
+                className="bg-primary hover:bg-primary-hover text-white font-semibold rounded-lg px-6 h-11 w-full sm:w-auto transition-all duration-200 hover:-translate-y-[1px] hover:shadow-lg hover:shadow-primary/20 inline-flex items-center justify-center min-h-[44px]"
               >
                 Continuar de onde parei
               </Link>

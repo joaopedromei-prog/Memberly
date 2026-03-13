@@ -64,7 +64,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-[#0A0A0A] overflow-hidden font-sans text-white selection:bg-[#E50914]/30">
+    <div className="relative min-h-screen w-full bg-[#0A0A0A] overflow-hidden font-sans text-white selection:bg-primary/30">
       {/* Noise Overlay */}
       <div
         className="pointer-events-none absolute inset-0 z-10 opacity-[0.03] mix-blend-overlay"
@@ -86,7 +86,7 @@ export default function LoginPage() {
             x: { duration: 20, repeat: Infinity, ease: 'easeInOut' },
             y: { duration: 20, repeat: Infinity, ease: 'easeInOut' },
           }}
-          className="absolute -top-[10%] -left-[10%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] rounded-full bg-[#E50914] blur-[80px] md:blur-[120px]"
+          className="absolute -top-[10%] -left-[10%] w-[300px] h-[300px] md:w-[600px] md:h-[600px] rounded-full bg-primary blur-[80px] md:blur-[120px]"
         />
         {/* Orb 2: Bottom Right */}
         <motion.div
@@ -116,7 +116,7 @@ export default function LoginPage() {
             x: { duration: 18, repeat: Infinity, ease: 'easeInOut' },
             y: { duration: 18, repeat: Infinity, ease: 'easeInOut' },
           }}
-          className="absolute bottom-[-10%] left-[30%] w-[200px] h-[200px] md:w-[400px] md:h-[400px] rounded-full bg-[#E50914] blur-[50px] md:blur-[80px]"
+          className="absolute bottom-[-10%] left-[30%] w-[200px] h-[200px] md:w-[400px] md:h-[400px] rounded-full bg-primary blur-[50px] md:blur-[80px]"
         />
       </div>
 
@@ -135,7 +135,7 @@ export default function LoginPage() {
             opacity: { duration: 0.8, delay: 0.3, ease: [0.25, 0.4, 0, 1] as [number, number, number, number] },
             x: { duration: 0.5 },
           }}
-          className="w-full max-w-md rounded-2xl border border-[#1F1F1F] bg-[#141414]/80 p-8 md:p-10 shadow-2xl shadow-black/50 backdrop-blur-xl"
+          className="w-full max-w-md rounded-2xl border border-[#1F1F1F] bg-dark-bg/80 p-8 md:p-10 shadow-2xl shadow-black/50 backdrop-blur-xl"
         >
           {/* Brand */}
           <motion.div
@@ -175,7 +175,7 @@ export default function LoginPage() {
                   className={`h-12 w-full rounded-xl border bg-[#0A0A0A] px-4 text-sm text-white placeholder-neutral-600 transition-colors duration-200 focus:outline-none focus:ring-1 ${
                     error
                       ? 'border-red-500 focus:border-red-500 focus:ring-red-500/30'
-                      : 'border-[#2A2A2A] focus:border-[#E50914] focus:ring-[#E50914]/30'
+                      : 'border-dark-card focus:border-primary focus:ring-primary/30'
                   }`}
                 />
               </div>
@@ -205,7 +205,7 @@ export default function LoginPage() {
                   className={`h-12 w-full rounded-xl border bg-[#0A0A0A] pl-4 pr-12 text-sm text-white placeholder-neutral-600 transition-colors duration-200 focus:outline-none focus:ring-1 ${
                     error
                       ? 'border-red-500 focus:border-red-500 focus:ring-red-500/30'
-                      : 'border-[#2A2A2A] focus:border-[#E50914] focus:ring-[#E50914]/30'
+                      : 'border-dark-card focus:border-primary focus:ring-primary/30'
                   }`}
                 />
                 <button
@@ -250,7 +250,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="group relative flex h-12 w-full items-center justify-center rounded-xl bg-[#E50914] text-sm font-semibold text-white transition-all duration-200 hover:bg-[#F40612] hover:-translate-y-[1px] hover:shadow-lg hover:shadow-[#E50914]/20 active:translate-y-0 active:shadow-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                className="group relative flex h-12 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-white transition-all duration-200 hover:bg-primary-hover hover:-translate-y-[1px] hover:shadow-lg hover:shadow-primary/20 active:translate-y-0 active:shadow-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
               >
                 {isLoading ? (
                   <>
@@ -272,7 +272,7 @@ export default function LoginPage() {
             >
               <Link
                 href="/forgot-password"
-                className="text-sm font-medium text-[#E50914] transition-colors hover:text-[#F40612] hover:underline"
+                className="text-sm font-medium text-primary transition-colors hover:text-primary-hover hover:underline"
               >
                 Esqueci minha senha
               </Link>

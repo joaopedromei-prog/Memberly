@@ -184,7 +184,7 @@ export default async function LessonPage({
       {isAdminPreview && (
         <PreviewBanner adminUrl={`/admin/products/${lesson.module.product.id}`} />
       )}
-      <div className={`mx-auto max-w-7xl bg-[#141414] py-4 lg:px-6 ${isAdminPreview ? 'pt-14' : ''}`}>
+      <div className={`mx-auto max-w-7xl bg-dark-bg py-4 lg:px-6 ${isAdminPreview ? 'pt-14' : ''}`}>
         <LessonLayout
           player={
             <VideoPlayer
