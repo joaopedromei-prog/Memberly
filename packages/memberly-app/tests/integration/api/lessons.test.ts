@@ -38,6 +38,25 @@ vi.mock('@/lib/supabase/server', () => ({
   }),
 }));
 
+vi.mock('@/lib/utils/auth-guard', () => ({
+  requireAdmin: vi.fn().mockResolvedValue({
+    ok: true,
+    data: {
+      user: { id: 'admin-user-id' },
+      role: 'admin',
+      supabase: { from: mockFrom },
+    },
+  }),
+  authenticateUser: vi.fn().mockResolvedValue({
+    ok: true,
+    data: {
+      user: { id: 'admin-user-id' },
+      role: 'admin',
+      supabase: { from: mockFrom },
+    },
+  }),
+}));
+
 vi.mock('next/server', () => ({
   NextResponse: {
     json: (data: unknown, init?: { status?: number }) => ({

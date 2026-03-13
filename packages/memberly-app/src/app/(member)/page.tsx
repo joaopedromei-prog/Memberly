@@ -247,7 +247,14 @@ async function getMemberCatalog(): Promise<{
 }
 
 export default async function MemberHomePage() {
-  const { products, continueWatching, bookmarks, heroItems } = await getMemberCatalog();
+  let catalog: Awaited<ReturnType<typeof getMemberCatalog>>;
+  try {
+    catalog = await getMemberCatalog();
+  } catch (error) {
+    console.error('Failed to load member catalog:', error);
+    catalog = { products: [], continueWatching: [], bookmarks: [], heroItems: [] };
+  }
+  const { products, continueWatching, bookmarks, heroItems } = catalog;
 
   if (products.length === 0) {
     return (

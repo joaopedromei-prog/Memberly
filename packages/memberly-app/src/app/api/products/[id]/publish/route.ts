@@ -1,5 +1,5 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
+import { requireAdmin } from '@/lib/utils/auth-guard';
 import type { NextRequest } from 'next/server';
 
 interface RouteParams {
@@ -7,8 +7,10 @@ interface RouteParams {
 }
 
 export async function PATCH(_request: NextRequest, { params }: RouteParams) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
   const { id } = await params;
-  const supabase = await createServerSupabaseClient();
+  const supabase = auth.data.supabase;
 
   // Fetch current state
   const { data: product, error: fetchError } = await supabase

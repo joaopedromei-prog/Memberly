@@ -1,11 +1,10 @@
-import { NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
+import { requireAdmin } from '@/lib/utils/auth-guard';
 
 export async function GET() {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return apiError('UNAUTHORIZED', 'Not authenticated', 401);
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
+  const supabase = auth.data.supabase;
 
   const { data: settings, error } = await supabase
     .from('site_settings')
@@ -22,9 +21,9 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return apiError('UNAUTHORIZED', 'Not authenticated', 401);
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
+  const supabase = auth.data.supabase;
 
   const body = await request.json();
 
@@ -33,13 +32,20 @@ export async function PATCH(request: Request) {
     return apiError('VALIDATION_ERROR', 'No settings to update', 400);
   }
 
-  for (const [key, value] of updates) {
-    const { error } = await supabase
-      .from('site_settings')
-      .update({ value: JSON.parse(JSON.stringify(value)), updated_at: new Date().toISOString() })
-      .eq('key', key);
+  const now = new Date().toISOString();
+  const results = await Promise.all(
+    updates.map(([key, value]) =>
+      supabase
+        .from('site_settings')
+        .update({ value: JSON.parse(JSON.stringify(value)), updated_at: now })
+        .eq('key', key)
+        .then(({ error }) => ({ key, error }))
+    )
+  );
 
-    if (error) return apiError('SERVER_ERROR', `Failed to update ${key}: ${error.message}`, 500);
+  const failed = results.filter((r) => r.error);
+  if (failed.length > 0) {
+    return apiError('SERVER_ERROR', `Failed to update: ${failed.map((f) => f.key).join(', ')}`, 500);
   }
 
   return apiSuccess({ updated: updates.map(([k]) => k) });

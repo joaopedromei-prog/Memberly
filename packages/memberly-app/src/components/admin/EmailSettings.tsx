@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown } from 'lucide-react';
 import { useToastStore } from '@/stores/toast-store';
+import { sanitizeHtml } from '@/lib/utils/sanitize';
 
 interface EmailSettingsProps {
   initialActive: boolean;
@@ -134,7 +135,7 @@ export function EmailSettings({ initialActive, initialSubject, initialBody, plat
                     <div className="border-t border-slate-200 my-3" />
                     <div
                       className="text-sm text-slate-700 leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: renderPreviewBody() }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(renderPreviewBody()) }}
                     />
                   </div>
                 </motion.div>

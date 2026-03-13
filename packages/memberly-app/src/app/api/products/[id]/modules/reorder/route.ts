@@ -1,9 +1,11 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
+import { requireAdmin } from '@/lib/utils/auth-guard';
 import type { NextRequest } from 'next/server';
 
 export async function PATCH(request: NextRequest) {
-  const supabase = await createServerSupabaseClient();
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
+  const supabase = auth.data.supabase;
 
   let body: { items?: { id: string; sort_order: number }[] };
   try {
@@ -16,15 +18,18 @@ export async function PATCH(request: NextRequest) {
     return apiError('VALIDATION_ERROR', 'Items array is required', 400);
   }
 
-  for (const item of body.items) {
-    const { error } = await supabase
-      .from('modules')
-      .update({ sort_order: item.sort_order })
-      .eq('id', item.id);
+  const results = await Promise.all(
+    body.items.map((item) =>
+      supabase
+        .from('modules')
+        .update({ sort_order: item.sort_order })
+        .eq('id', item.id)
+    )
+  );
 
-    if (error) {
-      return apiError('REORDER_ERROR', error.message, 500);
-    }
+  const failed = results.find((r) => r.error);
+  if (failed?.error) {
+    return apiError('REORDER_ERROR', failed.error.message, 500);
   }
 
   return apiSuccess({ reordered: true });

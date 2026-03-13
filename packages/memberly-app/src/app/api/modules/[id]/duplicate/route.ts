@@ -1,13 +1,15 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
+import { requireAdmin } from '@/lib/utils/auth-guard';
 import type { NextRequest } from 'next/server';
 
 export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
   const { id: moduleId } = await params;
-  const supabase = await createServerSupabaseClient();
+  const supabase = auth.data.supabase;
 
   // Fetch original module
   const { data: original, error: fetchError } = await supabase

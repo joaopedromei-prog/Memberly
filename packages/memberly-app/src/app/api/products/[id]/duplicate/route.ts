@@ -1,20 +1,17 @@
 import { NextRequest } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
+import { requireAdmin } from '@/lib/utils/auth-guard';
 import { slugify } from '@/lib/utils/slugify';
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
   const { id } = await params;
-  const supabase = await createServerSupabaseClient();
   const admin = createAdminClient();
-
-  // Auth check
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return apiError('UNAUTHORIZED', 'Not authenticated', 401);
 
   // Parse body
   const body = await request.json();

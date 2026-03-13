@@ -1,5 +1,5 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
+import { requireAdmin } from '@/lib/utils/auth-guard';
 import type { NextRequest } from 'next/server';
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -41,7 +41,9 @@ const BUCKET_CONFIGS: Record<string, BucketConfig> = {
 };
 
 export async function POST(request: NextRequest) {
-  const supabase = await createServerSupabaseClient();
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
+  const supabase = auth.data.supabase;
 
   let formData: FormData;
   try {

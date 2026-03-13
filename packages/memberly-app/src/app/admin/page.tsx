@@ -13,16 +13,7 @@ import {
 export default async function AdminDashboardPage() {
   const supabase = await createServerSupabaseClient();
 
-  const [
-    totalMembers,
-    activeMembers30d,
-    avgCompletion,
-    topLessons,
-    recentWebhooks,
-    chartData,
-    { count: totalLessons },
-    recentProducts,
-  ] = await Promise.all([
+  const results = await Promise.allSettled([
     getTotalMembers(supabase),
     getActiveMembers(supabase, 30),
     getAverageCompletion(supabase),
@@ -33,16 +24,24 @@ export default async function AdminDashboardPage() {
     getRecentProducts(supabase, 5),
   ]);
 
+  const val = <T,>(r: PromiseSettledResult<T>, fallback: T): T =>
+    r.status === 'fulfilled' ? r.value : fallback;
+
+  const lessonsResult = results[6];
+  const totalLessons = lessonsResult.status === 'fulfilled'
+    ? (lessonsResult.value.count ?? 0)
+    : 0;
+
   return (
     <AdminDashboardClient
-      totalMembers={totalMembers}
-      activeMembers30d={activeMembers30d}
-      avgCompletion={avgCompletion}
-      totalLessons={totalLessons ?? 0}
-      chartData={chartData}
-      recentWebhooks={recentWebhooks}
-      topLessons={topLessons}
-      recentProducts={recentProducts}
+      totalMembers={val(results[0], 0)}
+      activeMembers30d={val(results[1], 0)}
+      avgCompletion={val(results[2], 0)}
+      totalLessons={totalLessons}
+      chartData={val(results[5], [])}
+      recentWebhooks={val(results[4], [])}
+      topLessons={val(results[3], [])}
+      recentProducts={val(results[7], [])}
     />
   );
 }

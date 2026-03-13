@@ -1,5 +1,5 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
+import { requireAdmin } from '@/lib/utils/auth-guard';
 import type { NextRequest } from 'next/server';
 
 const VALID_PROVIDERS = ['youtube', 'pandavideo'];
@@ -8,8 +8,10 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
   const { id: moduleId } = await params;
-  const supabase = await createServerSupabaseClient();
+  const supabase = auth.data.supabase;
 
   const { data, error } = await supabase
     .from('lessons')
@@ -25,8 +27,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
   const { id: moduleId } = await params;
-  const supabase = await createServerSupabaseClient();
+  const supabase = auth.data.supabase;
   const body = await request.json();
 
   if (!body.title) {

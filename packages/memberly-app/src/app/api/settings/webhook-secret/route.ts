@@ -1,10 +1,10 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
+import { requireAdmin } from '@/lib/utils/auth-guard';
 
 export async function POST() {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return apiError('UNAUTHORIZED', 'Not authenticated', 401);
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
+  const supabase = auth.data.supabase;
 
   const newSecret = crypto.randomUUID();
 

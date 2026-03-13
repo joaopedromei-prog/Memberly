@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { PdfViewer } from '@/components/shared/PdfViewer';
 import type { LessonAttachment } from '@/types/database';
+import { sanitizeHtml } from '@/lib/utils/sanitize';
 
 interface LessonInfoProps {
   lessonId: string;
@@ -164,7 +165,7 @@ export function LessonInfo({
             className={`lesson-description text-sm leading-relaxed text-neutral-300 ${
               expanded ? '' : 'line-clamp-3'
             }`}
-            dangerouslySetInnerHTML={{ __html: description }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
           />
           {description.length > 200 && (
             <button
