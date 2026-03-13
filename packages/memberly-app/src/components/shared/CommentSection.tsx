@@ -93,11 +93,11 @@ export function CommentSection({ lessonId }: CommentSectionProps) {
           {[1, 2, 3].map((i) => (
             <div key={i} className="animate-pulse">
               <div className="flex gap-3">
-                <div className="h-8 w-8 rounded-full bg-[#2A2A2A]" />
+                <div className="h-8 w-8 rounded-full bg-dark-card" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 w-32 rounded bg-[#2A2A2A]" />
-                  <div className="h-3 w-full rounded bg-[#2A2A2A]" />
-                  <div className="h-3 w-2/3 rounded bg-[#2A2A2A]" />
+                  <div className="h-4 w-32 rounded bg-dark-card" />
+                  <div className="h-3 w-full rounded bg-dark-card" />
+                  <div className="h-3 w-2/3 rounded bg-dark-card" />
                 </div>
               </div>
             </div>
@@ -127,7 +127,7 @@ export function CommentSection({ lessonId }: CommentSectionProps) {
           <button
             onClick={loadMore}
             disabled={loadingMore}
-            className="min-h-[44px] rounded border border-[#333333] px-6 py-2 text-sm text-[#B3B3B3] transition-colors hover:bg-[#1F1F1F] hover:text-white disabled:opacity-50"
+            className="min-h-[44px] rounded border border-dark-border px-6 py-2 text-sm text-[#B3B3B3] transition-colors hover:bg-[#1F1F1F] hover:text-white disabled:opacity-50"
           >
             {loadingMore ? 'Carregando...' : 'Carregar mais comentários'}
           </button>

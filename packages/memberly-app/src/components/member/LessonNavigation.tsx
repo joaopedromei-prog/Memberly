@@ -15,11 +15,11 @@ export function LessonNavigation({
   nextLessonTitle,
 }: LessonNavigationProps) {
   return (
-    <div className="mt-8 flex flex-col gap-4 border-t border-[#2A2A2A] pt-6 sm:flex-row sm:justify-between">
+    <div className="mt-8 flex flex-col gap-4 border-t border-dark-card pt-6 sm:flex-row sm:justify-between">
       {prevLessonUrl ? (
         <Link
           href={prevLessonUrl}
-          className="group flex w-full flex-col items-start rounded-lg px-4 py-3 transition-colors hover:bg-[#1A1A1A] sm:w-auto"
+          className="group flex w-full flex-col items-start rounded-lg px-4 py-3 transition-colors hover:bg-dark-surface sm:w-auto"
           aria-label="Aula anterior"
         >
           <span className="flex items-center gap-2 text-sm text-neutral-400 transition-colors group-hover:text-white">
@@ -36,7 +36,7 @@ export function LessonNavigation({
       {nextLessonUrl ? (
         <Link
           href={nextLessonUrl}
-          className="group flex w-full flex-col items-end rounded-lg px-4 py-3 text-right transition-colors hover:bg-[#1A1A1A] sm:w-auto"
+          className="group flex w-full flex-col items-end rounded-lg px-4 py-3 text-right transition-colors hover:bg-dark-surface sm:w-auto"
           aria-label="Próxima aula"
         >
           <span className="flex items-center gap-2 text-sm text-neutral-400 transition-colors group-hover:text-white">

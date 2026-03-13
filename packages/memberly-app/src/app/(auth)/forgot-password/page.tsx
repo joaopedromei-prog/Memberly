@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0A0A0A] font-sans text-white selection:bg-[#E50914]/30">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0A0A0A] font-sans text-white selection:bg-primary/30">
       {/* Background Layer */}
       <div className="pointer-events-none absolute inset-0">
         <motion.div
@@ -66,7 +66,7 @@ export default function ForgotPasswordPage() {
               y: [0, -100, 50, 0],
             }}
             transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute left-0 top-0 h-[250px] w-[250px] rounded-full bg-[#E50914] opacity-15 mix-blend-screen blur-[70px] md:h-[500px] md:w-[500px] md:blur-[100px]"
+            className="absolute left-0 top-0 h-[250px] w-[250px] rounded-full bg-primary opacity-15 mix-blend-screen blur-[70px] md:h-[500px] md:w-[500px] md:blur-[100px]"
           />
           {/* Orb 2 */}
           <motion.div
@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
               y: [0, 50, -50, 0],
             }}
             transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute left-1/2 top-1/2 h-[175px] w-[175px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#E50914] opacity-8 mix-blend-screen blur-[50px] md:h-[350px] md:w-[350px] md:blur-[70px]"
+            className="absolute left-1/2 top-1/2 h-[175px] w-[175px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary opacity-8 mix-blend-screen blur-[50px] md:h-[350px] md:w-[350px] md:blur-[70px]"
           />
         </motion.div>
 
@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
           initial={{ y: 30, scale: 0.97, opacity: 0 }}
           animate={{ y: 0, scale: 1, opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full max-w-md rounded-2xl border border-[#1F1F1F] bg-[#141414]/80 p-8 shadow-2xl backdrop-blur-xl sm:p-10"
+          className="w-full max-w-md rounded-2xl border border-[#1F1F1F] bg-dark-bg/80 p-8 shadow-2xl backdrop-blur-xl sm:p-10"
         >
           {/* Brand */}
           <div className="mb-8 text-center">
@@ -133,7 +133,7 @@ export default function ForgotPasswordPage() {
                     <motion.div
                       animate={shouldReduceMotion ? {} : { opacity: [0.5, 1, 0.5] }}
                       transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                      className="absolute inset-0 rounded-full border border-[#2A2A2A] bg-[#1A1A1A]"
+                      className="absolute inset-0 rounded-full border border-dark-card bg-dark-surface"
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Lock className="h-7 w-7 text-neutral-400" />
@@ -181,7 +181,7 @@ export default function ForgotPasswordPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu@email.com"
                       autoComplete="email"
-                      className="h-12 w-full rounded-xl border border-[#2A2A2A] bg-[#0A0A0A] px-4 text-white transition-all duration-200 placeholder:text-neutral-600 focus:border-[#E50914] focus:outline-none focus:ring-1 focus:ring-[#E50914]/30"
+                      className="h-12 w-full rounded-xl border border-dark-card bg-[#0A0A0A] px-4 text-white transition-all duration-200 placeholder:text-neutral-600 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30"
                       required
                     />
                     {error && (
@@ -199,7 +199,7 @@ export default function ForgotPasswordPage() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="flex h-12 w-full items-center justify-center rounded-xl bg-[#E50914] font-semibold text-white transition-all duration-200 hover:-translate-y-[1px] hover:bg-[#F40612] hover:shadow-lg hover:shadow-[#E50914]/20 disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                      className="flex h-12 w-full items-center justify-center rounded-xl bg-primary font-semibold text-white transition-all duration-200 hover:-translate-y-[1px] hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/20 disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:shadow-none"
                     >
                       {isLoading ? (
                         <Loader2 className="h-5 w-5 animate-spin" />
@@ -217,7 +217,7 @@ export default function ForgotPasswordPage() {
                   >
                     <Link
                       href="/login"
-                      className="inline-flex min-h-[44px] items-center justify-center text-sm font-medium text-[#E50914] transition-colors duration-200 hover:text-[#F40612] hover:underline"
+                      className="inline-flex min-h-[44px] items-center justify-center text-sm font-medium text-primary transition-colors duration-200 hover:text-primary-hover hover:underline"
                     >
                       Voltar ao login
                     </Link>
@@ -273,7 +273,7 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 {/* Info Box */}
-                <div className="mb-6 flex items-center gap-3 rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] p-4">
+                <div className="mb-6 flex items-center gap-3 rounded-xl border border-dark-card bg-dark-surface p-4">
                   <Mail className="h-5 w-5 shrink-0 text-neutral-500" />
                   <p className="text-sm text-neutral-400">
                     Verifique também sua pasta de spam
@@ -283,7 +283,7 @@ export default function ForgotPasswordPage() {
                 {/* Actions */}
                 <Link
                   href="/login"
-                  className="flex h-12 w-full items-center justify-center rounded-xl border border-[#2A2A2A] bg-[#1A1A1A] font-semibold text-white transition-colors duration-200 hover:bg-[#2A2A2A]"
+                  className="flex h-12 w-full items-center justify-center rounded-xl border border-dark-card bg-dark-surface font-semibold text-white transition-colors duration-200 hover:bg-dark-card"
                 >
                   Voltar ao login
                 </Link>
@@ -296,7 +296,7 @@ export default function ForgotPasswordPage() {
                       setEmail('');
                       setError('');
                     }}
-                    className="inline-flex min-h-[44px] items-center justify-center text-sm font-medium text-[#E50914] transition-colors duration-200 hover:text-[#F40612]"
+                    className="inline-flex min-h-[44px] items-center justify-center text-sm font-medium text-primary transition-colors duration-200 hover:text-primary-hover"
                   >
                     Não recebeu? Reenviar email
                   </button>

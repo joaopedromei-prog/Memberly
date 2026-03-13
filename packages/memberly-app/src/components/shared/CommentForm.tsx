@@ -78,8 +78,8 @@ export function CommentForm({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder={isReply ? 'Escreva sua resposta...' : 'Escreva sua dúvida...'}
-        className={`w-full resize-none rounded border bg-[#1F1F1F] px-3 py-2 text-base text-white placeholder-[#B3B3B3] transition-colors focus:border-[#E50914] focus:outline-none ${
-          isOverLimit ? 'border-red-500' : 'border-[#333333]'
+        className={`w-full resize-none rounded border bg-[#1F1F1F] px-3 py-2 text-base text-white placeholder-[#B3B3B3] transition-colors focus:border-primary focus:outline-none ${
+          isOverLimit ? 'border-red-500' : 'border-dark-border'
         } ${isReply ? 'min-h-[60px]' : 'min-h-[60px] sm:min-h-[60px]'}`}
         style={{ minHeight: isReply ? undefined : undefined }}
         disabled={submitting}
@@ -114,7 +114,7 @@ export function CommentForm({
             type="submit"
             disabled={!canSubmit}
             aria-label="Enviar comentário"
-            className="min-h-[44px] rounded bg-[#E50914] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#B2070F] disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-[44px] rounded bg-primary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {submitting ? 'Enviando...' : 'Enviar'}
           </button>

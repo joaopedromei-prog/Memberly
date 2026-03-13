@@ -70,15 +70,15 @@ export function LessonSidebar({
             className={cn(
               'relative flex min-h-[44px] items-center gap-3 px-4 py-3 text-sm transition-colors duration-150',
               isCurrent
-                ? 'bg-[#2A2A2A] text-white'
-                : 'text-neutral-400 hover:bg-[#1A1A1A] hover:text-neutral-200'
+                ? 'bg-dark-card text-white'
+                : 'text-neutral-400 hover:bg-dark-surface hover:text-neutral-200'
             )}
           >
             {/* Active indicator line */}
             {isCurrent && (
               <motion.div
                 layoutId="activeLesson"
-                className="absolute bottom-0 left-0 top-0 w-[2px] bg-[#E50914]"
+                className="absolute bottom-0 left-0 top-0 w-[2px] bg-primary"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
@@ -87,7 +87,7 @@ export function LessonSidebar({
 
             <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center">
               {isCurrent ? (
-                <Play className="h-4 w-4 fill-[#E50914] text-[#E50914]" />
+                <Play className="h-4 w-4 fill-primary text-primary" />
               ) : lesson.completed ? (
                 <Check className="h-4 w-4 text-[#46D369]" />
               ) : (
@@ -121,14 +121,14 @@ export function LessonSidebar({
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="hidden flex-col rounded-lg bg-[#1A1A1A] lg:flex"
+        className="hidden flex-col rounded-lg bg-dark-surface lg:flex"
       >
-        <div className="shrink-0 border-b border-[#333333] p-4">
+        <div className="shrink-0 border-b border-dark-border p-4">
           <h3 className="text-lg font-semibold text-white">{moduleName}</h3>
           <div className="mt-1 text-xs text-neutral-400">
             {completedCount}/{lessons.length} aulas concluídas
           </div>
-          <div className="mt-3 h-1 overflow-hidden rounded-full bg-[#2A2A2A]">
+          <div className="mt-3 h-1 overflow-hidden rounded-full bg-dark-card">
             <div
               className="h-full bg-[#46D369] transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
@@ -142,7 +142,7 @@ export function LessonSidebar({
       <div className="lg:hidden">
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="flex w-full min-h-[44px] items-center justify-between rounded-lg bg-[#1A1A1A] px-4 py-3 text-sm text-white"
+          className="flex w-full min-h-[44px] items-center justify-between rounded-lg bg-dark-surface px-4 py-3 text-sm text-white"
           aria-expanded={mobileOpen}
         >
           <span>
@@ -164,7 +164,7 @@ export function LessonSidebar({
           <div className="overflow-hidden">
             <nav
               aria-label="Aulas do módulo"
-              className="rounded-b-lg bg-[#1A1A1A]"
+              className="rounded-b-lg bg-dark-surface"
             >
               {listContent}
             </nav>
