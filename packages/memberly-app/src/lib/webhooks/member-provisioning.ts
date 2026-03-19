@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+import { DEFAULT_MEMBER_PASSWORD } from '@/lib/constants/auth';
 
 export async function findOrCreateMember(
   adminClient: SupabaseClient,
@@ -24,17 +25,20 @@ export async function findOrCreateMember(
     return existingUser.id;
   }
 
-  // Create new user via invite (sends welcome email with credentials)
-  const { data: newUser, error: inviteError } =
-    await adminClient.auth.admin.inviteUserByEmail(email, {
-      data: {
+  // Create new user with default password (pre-confirmed, no invite email)
+  const { data: newUser, error: createError } =
+    await adminClient.auth.admin.createUser({
+      email,
+      password: DEFAULT_MEMBER_PASSWORD,
+      email_confirm: true,
+      user_metadata: {
         role: 'member',
         full_name: customerName || email.split('@')[0],
       },
     });
 
-  if (inviteError) {
-    throw new Error(`Failed to invite user: ${inviteError.message}`);
+  if (createError) {
+    throw new Error(`Failed to create user: ${createError.message}`);
   }
 
   // The handle_new_user() trigger creates the profile automatically

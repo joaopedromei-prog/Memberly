@@ -2,6 +2,7 @@ import { type NextRequest } from 'next/server';
 import { requireAdmin } from '@/lib/utils/auth-guard';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
+import { DEFAULT_MEMBER_PASSWORD } from '@/lib/constants/auth';
 
 export async function GET(request: NextRequest) {
   const auth = await requireAdmin();
@@ -91,10 +92,10 @@ export async function POST(request: NextRequest) {
 
   const supabaseAdmin = createAdminClient();
 
-  // Create user in Supabase Auth
+  // Create user in Supabase Auth with default password
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
     email: email.trim(),
-    password: crypto.randomUUID(),
+    password: DEFAULT_MEMBER_PASSWORD,
     email_confirm: true,
   });
 
@@ -124,9 +125,6 @@ export async function POST(request: NextRequest) {
       granted_by: 'manual',
     });
   }
-
-  // Send password recovery email
-  await supabaseAdmin.auth.resetPasswordForEmail(email.trim());
 
   return apiSuccess(
     {

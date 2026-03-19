@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/utils/auth-guard';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { DEFAULT_MEMBER_PASSWORD } from '@/lib/constants/auth';
 
 interface ImportRow {
   email: string;
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
       } else {
         const { data: newUser, error: createError } = await admin.auth.admin.createUser({
           email,
-          password: crypto.randomUUID(),
+          password: DEFAULT_MEMBER_PASSWORD,
           email_confirm: true,
         });
 
@@ -97,11 +98,6 @@ export async function POST(request: Request) {
           id: profileId,
           full_name: fullName,
           role: 'member',
-        });
-
-        await admin.auth.admin.generateLink({
-          type: 'recovery',
-          email,
         });
 
         created++;
