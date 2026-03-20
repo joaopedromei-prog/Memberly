@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { ProductHero } from '@/components/member/ProductHero';
 import { ModuleList, type ModuleWithProgress } from '@/components/member/ModuleList';
 import { PreviewBanner } from '@/components/member/PreviewBanner';
+import { CertificateDownloadButton } from '@/components/member/CertificateDownloadButton';
 import { isDripUnlocked, getEffectiveDripDays } from '@/lib/utils/drip';
 
 export const dynamic = 'force-dynamic';
@@ -30,6 +31,7 @@ interface Product {
   description: string;
   banner_url: string | null;
   slug: string;
+  certificate_enabled?: boolean;
   modules: Module[];
 }
 
@@ -66,7 +68,7 @@ export default async function ProductPage({
   }
 
   const productSelect = `
-    id, title, description, banner_url, slug,
+    id, title, description, banner_url, slug, certificate_enabled,
     modules (
       id, title, description, banner_url, sort_order,
       lessons ( id, title, sort_order, is_published )
@@ -208,6 +210,8 @@ export default async function ProductPage({
     ? `/products/${slug}/lessons/${nextGlobalLesson.id}${previewSuffix}`
     : null;
 
+  const isComplete = totalLessons > 0 && totalCompleted === totalLessons;
+
   return (
     <div className="pb-12">
       {isAdminPreview && (
@@ -223,6 +227,21 @@ export default async function ProductPage({
           nextLessonUrl={nextLessonUrl}
           completedLessons={totalCompleted}
         />
+        {isComplete && (
+          <div className="px-4 sm:px-6 lg:px-16 mt-4">
+            <div className="mx-auto max-w-7xl">
+              <CertificateDownloadButton
+                productId={resolvedProduct.id}
+                productSlug={slug}
+                isComplete={isComplete}
+                certificateEnabled={resolvedProduct.certificate_enabled ?? true}
+                completedLessons={totalCompleted}
+                totalLessons={totalLessons}
+                isPreview={isAdminPreview}
+              />
+            </div>
+          </div>
+        )}
         <ModuleList
           modules={modulesWithProgress}
           productSlug={slug}

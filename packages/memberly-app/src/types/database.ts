@@ -44,6 +44,7 @@ export interface Database {
           banner_url: string | null;
           slug: string;
           is_published: boolean;
+          certificate_enabled: boolean;
           sort_order: number;
           created_at: string;
           updated_at: string;
@@ -55,6 +56,7 @@ export interface Database {
           banner_url?: string | null;
           slug: string;
           is_published?: boolean;
+          certificate_enabled?: boolean;
           sort_order?: number;
           created_at?: string;
           updated_at?: string;
@@ -66,6 +68,7 @@ export interface Database {
           banner_url?: string | null;
           slug?: string;
           is_published?: boolean;
+          certificate_enabled?: boolean;
           sort_order?: number;
           created_at?: string;
           updated_at?: string;

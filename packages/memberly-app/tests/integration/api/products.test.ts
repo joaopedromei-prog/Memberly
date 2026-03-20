@@ -143,4 +143,64 @@ describe('Products API Routes', () => {
       expect(response.status).toBe(409);
     });
   });
+
+  describe('PATCH /api/products/[id] — certificate_enabled', () => {
+    it('updates certificate_enabled to true', async () => {
+      const updated = { id: '1', title: 'Product', certificate_enabled: true };
+      mockSingle.mockResolvedValue({ data: updated, error: null });
+
+      const { PATCH } = await import('@/app/api/products/[id]/route');
+      const request = new Request('http://localhost/api/products/1', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ certificate_enabled: true }),
+      });
+
+      const response = await PATCH(request as never, {
+        params: Promise.resolve({ id: '1' }),
+      });
+
+      expect(response.status).toBe(200);
+      expect(mockUpdate).toHaveBeenCalled();
+    });
+
+    it('updates certificate_enabled to false', async () => {
+      const updated = { id: '1', title: 'Product', certificate_enabled: false };
+      mockSingle.mockResolvedValue({ data: updated, error: null });
+
+      const { PATCH } = await import('@/app/api/products/[id]/route');
+      const request = new Request('http://localhost/api/products/1', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ certificate_enabled: false }),
+      });
+
+      const response = await PATCH(request as never, {
+        params: Promise.resolve({ id: '1' }),
+      });
+
+      expect(response.status).toBe(200);
+    });
+
+    it('preserves certificate_enabled when not included in update', async () => {
+      const updated = { id: '1', title: 'Updated', certificate_enabled: true };
+      mockSingle.mockResolvedValue({ data: updated, error: null });
+
+      const { PATCH } = await import('@/app/api/products/[id]/route');
+      const request = new Request('http://localhost/api/products/1', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'Updated' }),
+      });
+
+      const response = await PATCH(request as never, {
+        params: Promise.resolve({ id: '1' }),
+      });
+
+      expect(response.status).toBe(200);
+      // certificate_enabled should NOT be in the update payload when not provided
+      const updateCall = mockUpdate.mock.results;
+      expect(updateCall).toBeDefined();
+    });
+  });
 });

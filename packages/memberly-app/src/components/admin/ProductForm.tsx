@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { Textarea } from '@/components/ui/Textarea';
 import { BannerGenerator } from '@/components/admin/BannerGenerator';
+import { CertificateToggle } from '@/components/admin/CertificateToggle';
 import { slugify } from '@/lib/utils/slugify';
 import { apiRequest, ApiRequestError } from '@/lib/utils/api';
 import { useToastStore } from '@/stores/toast-store';
@@ -27,6 +28,9 @@ export function ProductForm({ product, embedded }: ProductFormProps) {
   const [slug, setSlug] = useState(product?.slug ?? '');
   const [bannerUrl, setBannerUrl] = useState<string | null>(
     product?.banner_url ?? null
+  );
+  const [certificateEnabled, setCertificateEnabled] = useState(
+    product?.certificate_enabled ?? false
   );
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -62,13 +66,13 @@ export function ProductForm({ product, embedded }: ProductFormProps) {
       if (isEditing) {
         await apiRequest(`/api/products/${product.id}`, {
           method: 'PATCH',
-          body: JSON.stringify({ title, description, slug, banner_url: bannerUrl }),
+          body: JSON.stringify({ title, description, slug, banner_url: bannerUrl, certificate_enabled: certificateEnabled }),
         });
         addToast('Produto atualizado com sucesso', 'success');
       } else {
         await apiRequest('/api/products', {
           method: 'POST',
-          body: JSON.stringify({ title, description, slug, banner_url: bannerUrl }),
+          body: JSON.stringify({ title, description, slug, banner_url: bannerUrl, certificate_enabled: certificateEnabled }),
         });
         addToast('Produto criado com sucesso', 'success');
       }
@@ -158,6 +162,14 @@ export function ProductForm({ product, embedded }: ProductFormProps) {
           />
         </div>
       </div>
+
+      <CertificateToggle
+        enabled={certificateEnabled}
+        onChange={(value) => {
+          setCertificateEnabled(value);
+          setIsDirty(true);
+        }}
+      />
 
       <div className="flex gap-3">
         <Button type="submit" isLoading={isSubmitting}>

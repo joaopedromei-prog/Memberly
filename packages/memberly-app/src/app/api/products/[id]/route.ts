@@ -50,6 +50,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   if (body.slug !== undefined) updateData.slug = body.slug;
   if (body.is_published !== undefined) updateData.is_published = body.is_published;
   if (body.sort_order !== undefined) updateData.sort_order = body.sort_order;
+  if (body.certificate_enabled !== undefined) updateData.certificate_enabled = body.certificate_enabled;
 
   if (Object.keys(updateData).length === 0) {
     return apiError('VALIDATION_ERROR', 'No fields to update', 400);
