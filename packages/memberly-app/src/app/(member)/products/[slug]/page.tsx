@@ -68,7 +68,7 @@ export default async function ProductPage({
   }
 
   const productSelect = `
-    id, title, description, banner_url, slug, certificate_enabled,
+    id, title, description, banner_url, slug,
     modules (
       id, title, description, banner_url, sort_order,
       lessons ( id, title, sort_order, is_published )
@@ -156,6 +156,18 @@ export default async function ProductPage({
 
   if (!resolvedProduct) {
     redirect('/?message=produto-nao-encontrado');
+  }
+
+  // Fetch certificate_enabled separately to avoid breaking the main query
+  // if the column doesn't exist yet (migration not applied)
+  let certificateEnabled = false;
+  const { data: certData } = await adminDb
+    .from('products')
+    .select('certificate_enabled')
+    .eq('id', resolvedProduct.id)
+    .maybeSingle();
+  if (certData && 'certificate_enabled' in certData) {
+    certificateEnabled = (certData as { certificate_enabled: boolean }).certificate_enabled;
   }
 
   // Fetch member progress (admin client bypasses RLS)
@@ -269,7 +281,7 @@ export default async function ProductPage({
                 productId={resolvedProduct.id}
                 productSlug={slug}
                 isComplete={isComplete}
-                certificateEnabled={resolvedProduct.certificate_enabled ?? true}
+                certificateEnabled={certificateEnabled}
                 completedLessons={totalCompleted}
                 totalLessons={totalLessons}
                 isPreview={isAdminPreview}
