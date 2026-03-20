@@ -281,7 +281,7 @@ export function ProductContentManager({
             const lessonCount = module.lessons.length;
 
             return (
-              <div className="mb-3 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+              <div className="mb-3 rounded-lg border border-gray-200 bg-white shadow-sm">
                 {/* Module Header */}
                 <div className="flex items-center gap-3 px-4 py-3">
                   {/* Drag Handle */}
