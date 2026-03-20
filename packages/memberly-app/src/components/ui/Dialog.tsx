@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 
 interface DialogProps {
   open: boolean;
@@ -30,25 +31,35 @@ function DialogRoot({ open, onClose, size = 'md', children }: DialogProps) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose]);
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="fixed inset-0 bg-black/50"
-        onClick={onClose}
-        aria-hidden="true"
-        data-testid="dialog-overlay"
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        className={`relative z-10 w-full ${sizeClasses[size]} rounded-xl bg-white p-6 shadow-xl`}
-        data-testid="dialog-content"
-      >
-        {children}
-      </div>
-    </div>
+    <AnimatePresence>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/50"
+            onClick={onClose}
+            aria-hidden="true"
+            data-testid="dialog-overlay"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            role="dialog"
+            aria-modal="true"
+            className={`relative z-10 w-full ${sizeClasses[size]} rounded-xl bg-white p-6 shadow-xl`}
+            data-testid="dialog-content"
+          >
+            {children}
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }
 

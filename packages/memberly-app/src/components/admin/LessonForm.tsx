@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { Select } from '@/components/ui/Select';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { BulkFileUpload } from '@/components/admin/BulkFileUpload';
@@ -50,6 +51,8 @@ export function LessonForm({
   const [isPublished, setIsPublished] = useState(lesson?.is_published ?? false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [isDirty, setIsDirty] = useState(false);
+  useUnsavedChanges(isDirty);
 
   useEffect(() => {
     const extracted = extractVideoId(videoProvider, videoInput);
@@ -115,7 +118,7 @@ export function LessonForm({
   };
 
   const formContent = (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} onChange={() => setIsDirty(true)} className="space-y-4">
         <Input
           id="lesson-title"
           label="Título *"

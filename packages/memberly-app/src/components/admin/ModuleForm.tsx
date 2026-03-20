@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { Textarea } from '@/components/ui/Textarea';
 import { BannerGenerator } from '@/components/admin/BannerGenerator';
 import { apiRequest, ApiRequestError } from '@/lib/utils/api';
@@ -37,6 +38,8 @@ export function ModuleForm({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [isDirty, setIsDirty] = useState(false);
+  useUnsavedChanges(isDirty);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +78,7 @@ export function ModuleForm({
   };
 
   const formContent = (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} onChange={() => setIsDirty(true)} className="space-y-4">
       <Input
         id="module-title"
         label="Título *"

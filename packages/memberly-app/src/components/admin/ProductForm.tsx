@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { Textarea } from '@/components/ui/Textarea';
 import { BannerGenerator } from '@/components/admin/BannerGenerator';
 import { slugify } from '@/lib/utils/slugify';
@@ -31,6 +32,8 @@ export function ProductForm({ product, embedded }: ProductFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isDirty, setIsDirty] = useState(false);
+  useUnsavedChanges(isDirty);
 
   useEffect(() => {
     if (!slugManuallyEdited && !isEditing) {
@@ -86,7 +89,7 @@ export function ProductForm({ product, embedded }: ProductFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} onChange={() => setIsDirty(true)} className="space-y-6">
       <Input
         id="title"
         label="Título *"

@@ -109,4 +109,26 @@ describe('Dialog', () => {
     expect(content).toHaveAttribute('role', 'dialog');
     expect(content).toHaveAttribute('aria-modal', 'true');
   });
+
+  it('uses motion elements for overlay and content (AnimatePresence wrapping)', () => {
+    const { container } = render(
+      <Dialog open={true} onClose={onClose}>
+        <p>Animated content</p>
+      </Dialog>
+    );
+    // With the motion mock, motion.div renders as <div>
+    // The overlay and content should both be rendered as divs
+    expect(screen.getByTestId('dialog-overlay')).toBeInTheDocument();
+    expect(screen.getByTestId('dialog-content')).toBeInTheDocument();
+    expect(screen.getByText('Animated content')).toBeInTheDocument();
+  });
+
+  it('renders nothing inside AnimatePresence when closed', () => {
+    const { container } = render(
+      <Dialog open={false} onClose={onClose}>
+        <p>Hidden</p>
+      </Dialog>
+    );
+    expect(screen.queryByText('Hidden')).not.toBeInTheDocument();
+  });
 });

@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 import { cn } from '@/lib/utils/cn';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -8,7 +8,11 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  function Input({ className, label, error, helperText, id, ...props }, ref) {
+  function Input({ className, label, error, helperText, id: externalId, ...props }, ref) {
+    const generatedId = useId();
+    const id = externalId || generatedId;
+    const errorId = `${id}-error`;
+
     return (
       <div className="w-full">
         {label && (
@@ -19,6 +23,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           id={id}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
           className={cn(
             'block w-full rounded-lg border px-3 py-2 text-sm text-gray-900 shadow-sm transition-colors focus:outline-none focus:ring-1',
             error
@@ -28,7 +34,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
           {...props}
         />
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+        {error && <p id={errorId} className="mt-1 text-sm text-red-600">{error}</p>}
         {helperText && !error && <p className="mt-1 text-xs text-gray-500">{helperText}</p>}
       </div>
     );
