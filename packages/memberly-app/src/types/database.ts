@@ -399,6 +399,87 @@ export interface Database {
           enabled?: boolean;
         };
       };
+      badges: {
+        Row: {
+          id: string;
+          name: string;
+          description: string;
+          icon_url: string | null;
+          criteria: Record<string, unknown>;
+          active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string;
+          icon_url?: string | null;
+          criteria: Record<string, unknown>;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          description?: string;
+          icon_url?: string | null;
+          criteria?: Record<string, unknown>;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      member_badges: {
+        Row: {
+          id: string;
+          profile_id: string;
+          badge_id: string;
+          unlocked_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          badge_id: string;
+          unlocked_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          badge_id?: string;
+          unlocked_at?: string;
+        };
+      };
+      streaks: {
+        Row: {
+          id: string;
+          profile_id: string;
+          current_streak: number;
+          longest_streak: number;
+          last_activity_date: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          current_streak?: number;
+          longest_streak?: number;
+          last_activity_date?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          current_streak?: number;
+          longest_streak?: number;
+          last_activity_date?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       site_settings: {
         Row: {
           key: string;
@@ -456,3 +537,12 @@ export type NotificationUpdate = Database['public']['Tables']['notifications']['
 export type NotificationPreference = Database['public']['Tables']['notification_preferences']['Row'];
 export type NotificationPreferenceInsert = Database['public']['Tables']['notification_preferences']['Insert'];
 export type NotificationPreferenceUpdate = Database['public']['Tables']['notification_preferences']['Update'];
+export type Badge = Database['public']['Tables']['badges']['Row'];
+export type BadgeInsert = Database['public']['Tables']['badges']['Insert'];
+export type BadgeUpdate = Database['public']['Tables']['badges']['Update'];
+export type MemberBadge = Database['public']['Tables']['member_badges']['Row'];
+export type MemberBadgeInsert = Database['public']['Tables']['member_badges']['Insert'];
+export type Streak = Database['public']['Tables']['streaks']['Row'];
+export type StreakRow = Database['public']['Tables']['streaks']['Row'];
+export type StreakInsert = Database['public']['Tables']['streaks']['Insert'];
+export type StreakUpdate = Database['public']['Tables']['streaks']['Update'];

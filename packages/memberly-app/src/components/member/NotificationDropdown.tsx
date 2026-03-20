@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { BookOpen, MessageCircle, Trophy } from 'lucide-react';
+import { Award, BookOpen, MessageCircle, Trophy } from 'lucide-react';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { getRelativeTime } from '@/lib/utils/relative-time';
 import type { Notification } from '@/hooks/useNotifications';
@@ -11,6 +11,7 @@ const NOTIFICATION_ICONS: Record<NotificationType, React.ComponentType<{ size?: 
   NEW_LESSON: BookOpen,
   COMMENT_REPLY: MessageCircle,
   COURSE_COMPLETED: Trophy,
+  BADGE_UNLOCKED: Award,
 };
 
 function getNotificationUrl(notification: Notification): string {
@@ -24,6 +25,8 @@ function getNotificationUrl(notification: Notification): string {
       return `/products/${data.productSlug}/lessons/${data.lessonId}`;
     case 'COURSE_COMPLETED':
       return `/products/${data.productSlug}`;
+    case 'BADGE_UNLOCKED':
+      return '/notifications';
     default:
       return '/notifications';
   }

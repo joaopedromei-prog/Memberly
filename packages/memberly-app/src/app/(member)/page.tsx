@@ -8,6 +8,8 @@ import { ProductCard } from '@/components/member/ProductCard';
 import { ContinueWatchingCard } from '@/components/member/ContinueWatchingCard';
 import { BookmarkCard } from '@/components/member/BookmarkCard';
 import { Heart } from 'lucide-react';
+import { StreakCounter } from '@/components/member/StreakCounter';
+import { AchievementsSection } from '@/components/member/AchievementsSection';
 
 interface ProductWithProgress {
   id: string;
@@ -273,6 +275,9 @@ export default async function MemberHomePage() {
     <>
       <HeroBanner items={heroItems} />
       <div className="mt-[-8vw] sm:mt-[-6vw] lg:mt-[-4vw] relative z-20 space-y-2 sm:space-y-4 lg:space-y-8">
+        <div className="px-4 sm:px-6 lg:px-16">
+          <StreakCounter />
+        </div>
         {continueWatching.length > 0 && (
           <Carousel title="Continue Assistindo">
             {continueWatching.map((item) => (
@@ -322,6 +327,8 @@ export default async function MemberHomePage() {
             ))}
           </Carousel>
         )}
+
+        <AchievementsSection />
       </div>
     </>
   );

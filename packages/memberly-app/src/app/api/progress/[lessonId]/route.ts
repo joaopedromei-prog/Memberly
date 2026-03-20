@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
 import { notifyCourseCompleted } from '@/lib/notifications/triggers/course-completed';
+import { updateStreak } from '@/lib/gamification/streak-tracker';
 import type { NextRequest } from 'next/server';
 
 export async function POST(
@@ -65,9 +66,10 @@ export async function POST(
 
     if (error) return apiError('UPDATE_ERROR', error.message, 500);
 
-    // Fire-and-forget: check course completion when toggling to completed (AC5, AC6)
+    // Fire-and-forget: check course completion and update streak when toggling to completed
     if (newCompleted) {
       notifyCourseCompleted(user.id, lessonId).catch(() => {/* silent */});
+      updateStreak(user.id).catch(() => {/* silent */});
     }
 
     return apiSuccess(data);
@@ -87,8 +89,9 @@ export async function POST(
 
   if (error) return apiError('CREATE_ERROR', error.message, 500);
 
-  // Fire-and-forget: check course completion on first completion (AC5, AC6)
+  // Fire-and-forget: check course completion and update streak on first completion
   notifyCourseCompleted(user.id, lessonId).catch(() => {/* silent */});
+  updateStreak(user.id).catch(() => {/* silent */});
 
   return apiSuccess(data, 201);
 }
