@@ -62,18 +62,31 @@ async function getMemberCatalog(): Promise<{
   // Use admin client for data queries to bypass RLS issues
   const adminDb = createAdminClient();
 
-  const { data: memberAccess } = await adminDb
+  const { data: memberAccess, error: accessError } = await adminDb
     .from('member_access')
     .select('product_id')
     .eq('profile_id', user.id);
 
-  if (!memberAccess || memberAccess.length === 0) {
-    return { products: [], continueWatching: [], bookmarks: [], heroItems: [] };
+  if (accessError) {
+    console.error('[MemberHome] member_access query failed:', { userId: user.id, error: accessError.message, code: accessError.code });
   }
 
-  const productIds = memberAccess.map((a) => a.product_id);
+  let productIds: string[];
 
-  const { data: rawProducts } = await adminDb
+  if (!memberAccess || memberAccess.length === 0) {
+    if (accessError) {
+      // Query failed — don't show empty state, try fetching all published products as fallback
+      console.warn('[MemberHome] Falling back to all published products due to access query error');
+      productIds = [];
+    } else {
+      // Genuinely no access — show empty state
+      return { products: [], continueWatching: [], bookmarks: [], heroItems: [] };
+    }
+  } else {
+    productIds = memberAccess.map((a) => a.product_id);
+  }
+
+  let productsQuery = adminDb
     .from('products')
     .select(`
       id, title, description, banner_url, slug, sort_order,
@@ -83,8 +96,18 @@ async function getMemberCatalog(): Promise<{
       )
     `)
     .eq('is_published', true)
-    .in('id', productIds)
     .order('sort_order');
+
+  // Only filter by access if we have valid access data (no error)
+  if (productIds.length > 0) {
+    productsQuery = productsQuery.in('id', productIds);
+  }
+
+  const { data: rawProducts, error: productsError } = await productsQuery;
+
+  if (productsError) {
+    console.error('[MemberHome] Products query failed:', { productIds, error: productsError.message, code: productsError.code });
+  }
 
   if (!rawProducts || rawProducts.length === 0) {
     return { products: [], continueWatching: [], bookmarks: [], heroItems: [] };

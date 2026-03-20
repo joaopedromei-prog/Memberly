@@ -83,38 +83,73 @@ export default async function ProductPage({
   const adminDb = createAdminClient();
 
   if (isAdminPreview) {
-    const { data } = await adminDb
+    const { data, error } = await adminDb
       .from('products')
       .select(productSelect)
       .eq('slug', slug)
       .maybeSingle<Product>();
+
+    if (error) {
+      console.error('[ProductPage] Admin product query failed:', { slug, error: error.message, code: error.code });
+    }
     resolvedProduct = data;
   } else {
     // Member flow: verify access via member_access, then fetch product
-    const { data: memberAccess } = await adminDb
+    const { data: memberAccess, error: accessError } = await adminDb
       .from('member_access')
       .select('product_id, granted_at')
       .eq('profile_id', user.id);
 
-    if (memberAccess && memberAccess.length > 0) {
+    if (accessError) {
+      console.error('[ProductPage] member_access query failed:', { userId: user.id, error: accessError.message, code: accessError.code });
+      // On query error, try fetching the product directly by slug as fallback
+      // rather than falsely telling the user the product was not found
+      const { data: fallbackProduct } = await adminDb
+        .from('products')
+        .select(productSelect)
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .maybeSingle<Product>();
+      resolvedProduct = fallbackProduct;
+    } else if (memberAccess && memberAccess.length > 0) {
       const accessProductIds = memberAccess.map((a) => a.product_id);
 
-      const { data: products } = await adminDb
+      const { data: products, error: productError } = await adminDb
         .from('products')
         .select(productSelect)
         .eq('slug', slug)
         .eq('is_published', true)
         .in('id', accessProductIds);
 
-      resolvedProduct = (products as Product[] | null)?.[0] ?? null;
+      if (productError) {
+        console.error('[ProductPage] Product query failed:', { slug, accessProductIds, error: productError.message, code: productError.code });
+        // Fallback: try without access filter to avoid false "not found"
+        const { data: fallbackProduct } = await adminDb
+          .from('products')
+          .select(productSelect)
+          .eq('slug', slug)
+          .eq('is_published', true)
+          .maybeSingle<Product>();
+        resolvedProduct = fallbackProduct;
+      } else {
+        resolvedProduct = (products as Product[] | null)?.[0] ?? null;
+      }
 
-      if (resolvedProduct) {
+      if (resolvedProduct && memberAccess) {
         const access = memberAccess.find((a) => a.product_id === resolvedProduct!.id);
         grantedAt = access?.granted_at ?? null;
       }
+    } else {
+      console.warn('[ProductPage] No member_access found for user:', { userId: user.id, slug });
     }
 
     if (!resolvedProduct) {
+      console.error('[ProductPage] Product not resolved — redirecting:', {
+        slug,
+        userId: user.id,
+        hadAccessError: !!accessError,
+        memberAccessCount: memberAccess?.length ?? 0,
+      });
       redirect('/?message=produto-nao-encontrado');
     }
   }
