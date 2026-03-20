@@ -300,6 +300,38 @@ export interface Database {
           created_at?: string;
         };
       };
+      certificates: {
+        Row: {
+          id: string;
+          profile_id: string;
+          product_id: string;
+          certificate_url: string | null;
+          hash: string;
+          issued_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          product_id: string;
+          certificate_url?: string | null;
+          hash: string;
+          issued_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          product_id?: string;
+          certificate_url?: string | null;
+          hash?: string;
+          issued_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       site_settings: {
         Row: {
           key: string;
@@ -348,3 +380,6 @@ export type Comment = Database['public']['Tables']['comments']['Row'];
 export type LessonProgress = Database['public']['Tables']['lesson_progress']['Row'];
 export type ProductMapping = Database['public']['Tables']['product_mappings']['Row'];
 export type LessonBookmark = Database['public']['Tables']['lesson_bookmarks']['Row'];
+export type Certificate = Database['public']['Tables']['certificates']['Row'];
+export type CertificateInsert = Database['public']['Tables']['certificates']['Insert'];
+export type CertificateUpdate = Database['public']['Tables']['certificates']['Update'];
