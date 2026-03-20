@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
+import { notifyCourseCompleted } from '@/lib/notifications/triggers/course-completed';
 import type { NextRequest } from 'next/server';
 
 export async function POST(
@@ -63,6 +64,12 @@ export async function POST(
       .single();
 
     if (error) return apiError('UPDATE_ERROR', error.message, 500);
+
+    // Fire-and-forget: check course completion when toggling to completed (AC5, AC6)
+    if (newCompleted) {
+      notifyCourseCompleted(user.id, lessonId).catch(() => {/* silent */});
+    }
+
     return apiSuccess(data);
   }
 
@@ -79,5 +86,9 @@ export async function POST(
     .single();
 
   if (error) return apiError('CREATE_ERROR', error.message, 500);
+
+  // Fire-and-forget: check course completion on first completion (AC5, AC6)
+  notifyCourseCompleted(user.id, lessonId).catch(() => {/* silent */});
+
   return apiSuccess(data, 201);
 }

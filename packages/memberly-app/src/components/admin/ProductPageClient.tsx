@@ -25,7 +25,8 @@ import { BannerGenerator } from '@/components/admin/BannerGenerator';
 import { ProductContentManager } from '@/components/admin/ProductContentManager';
 import { ProductMappings } from '@/components/admin/ProductMappings';
 import { DuplicateProductDialog } from '@/components/admin/DuplicateProductDialog';
-import type { Product } from '@/types/database';
+import { NotificationSettings } from '@/components/admin/NotificationSettings';
+import type { Product, NotificationsConfig } from '@/types/database';
 import type { ModuleWithLessons } from '@/types/api';
 
 interface ProductPageClientProps {
@@ -533,6 +534,18 @@ export function ProductPageClient({
               )}
             </div>
           </motion.section>
+
+          {/* Notification Settings */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.12 }}
+          >
+            <NotificationSettings
+              productId={product.id}
+              initialConfig={product.notifications_config as NotificationsConfig ?? { NEW_LESSON: true, COMMENT_REPLY: true, COURSE_COMPLETED: true }}
+            />
+          </motion.div>
 
           {/* Duplicate */}
           <motion.section

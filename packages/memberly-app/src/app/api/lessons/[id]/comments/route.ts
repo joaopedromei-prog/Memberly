@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
+import { notifyCommentReply } from '@/lib/notifications/triggers/comment-reply';
 
 export async function GET(
   request: NextRequest,
@@ -139,6 +140,11 @@ export async function POST(
 
   if (error) {
     return apiError('DATABASE_ERROR', 'Erro ao criar comentário', 500);
+  }
+
+  // Fire-and-forget: notify parent comment author on reply (AC4, AC6)
+  if (body.parent_id && data) {
+    notifyCommentReply(data.id, body.parent_id, user.id).catch(() => {/* silent */});
   }
 
   return apiSuccess(data, 201);

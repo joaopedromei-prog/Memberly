@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { SearchOverlay } from '@/components/member/SearchOverlay';
+import { NotificationBell } from '@/components/member/NotificationBell';
 
 export function MemberHeader() {
   const user = useAuthStore((s) => s.user);
@@ -56,6 +57,7 @@ export function MemberHeader() {
           >
             <Search size={20} />
           </button>
+          <NotificationBell />
           {user && (
             <span className="text-sm text-neutral-300 hidden sm:block px-2">
               {user.full_name}

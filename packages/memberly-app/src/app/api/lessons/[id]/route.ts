@@ -1,5 +1,6 @@
 import { apiError, apiSuccess } from '@/lib/utils/api-response';
 import { requireAdmin } from '@/lib/utils/auth-guard';
+import { notifyNewLesson } from '@/lib/notifications/triggers/new-lesson';
 import type { NextRequest } from 'next/server';
 
 const VALID_PROVIDERS = ['youtube', 'pandavideo'];
@@ -38,6 +39,17 @@ export async function PATCH(
     return apiError('VALIDATION_ERROR', 'No fields to update', 400);
   }
 
+  // Check current publish state before update (for NEW_LESSON trigger)
+  let wasUnpublished = false;
+  if (body.is_published === true) {
+    const { data: currentLesson } = await supabase
+      .from('lessons')
+      .select('is_published')
+      .eq('id', lessonId)
+      .single();
+    wasUnpublished = !!currentLesson && !currentLesson.is_published;
+  }
+
   const { data, error } = await supabase
     .from('lessons')
     .update(updates)
@@ -46,6 +58,12 @@ export async function PATCH(
     .single();
 
   if (error) return apiError('UPDATE_ERROR', error.message, 500);
+
+  // Fire-and-forget: notify members when lesson transitions to published (AC3, AC6)
+  if (body.is_published === true && wasUnpublished) {
+    notifyNewLesson(lessonId).catch(() => {/* silent — notification failure must not block */});
+  }
+
   return apiSuccess(data);
 }
 

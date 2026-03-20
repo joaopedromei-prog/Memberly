@@ -51,6 +51,21 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   if (body.is_published !== undefined) updateData.is_published = body.is_published;
   if (body.sort_order !== undefined) updateData.sort_order = body.sort_order;
   if (body.certificate_enabled !== undefined) updateData.certificate_enabled = body.certificate_enabled;
+  if (body.notifications_config !== undefined) {
+    const nc = body.notifications_config;
+    // Validate notifications_config shape: must be object with only valid boolean keys
+    if (
+      typeof nc === 'object' &&
+      nc !== null &&
+      !Array.isArray(nc) &&
+      Object.keys(nc).every((k) => ['NEW_LESSON', 'COMMENT_REPLY', 'COURSE_COMPLETED'].includes(k)) &&
+      Object.values(nc).every((v) => typeof v === 'boolean')
+    ) {
+      updateData.notifications_config = nc;
+    } else {
+      return apiError('VALIDATION_ERROR', 'notifications_config must contain only NEW_LESSON, COMMENT_REPLY, COURSE_COMPLETED as boolean values', 400);
+    }
+  }
 
   if (Object.keys(updateData).length === 0) {
     return apiError('VALIDATION_ERROR', 'No fields to update', 400);

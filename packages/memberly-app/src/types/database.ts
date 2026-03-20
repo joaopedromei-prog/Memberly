@@ -1,5 +1,11 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
+export interface NotificationsConfig {
+  NEW_LESSON: boolean;
+  COMMENT_REPLY: boolean;
+  COURSE_COMPLETED: boolean;
+}
+
 export interface LessonAttachment {
   name: string;
   url: string;
@@ -45,6 +51,7 @@ export interface Database {
           slug: string;
           is_published: boolean;
           certificate_enabled: boolean;
+          notifications_config: NotificationsConfig;
           sort_order: number;
           created_at: string;
           updated_at: string;
@@ -57,6 +64,7 @@ export interface Database {
           slug: string;
           is_published?: boolean;
           certificate_enabled?: boolean;
+          notifications_config?: NotificationsConfig;
           sort_order?: number;
           created_at?: string;
           updated_at?: string;
@@ -69,6 +77,7 @@ export interface Database {
           slug?: string;
           is_published?: boolean;
           certificate_enabled?: boolean;
+          notifications_config?: NotificationsConfig;
           sort_order?: number;
           created_at?: string;
           updated_at?: string;
@@ -335,6 +344,61 @@ export interface Database {
           updated_at?: string;
         };
       };
+      notifications: {
+        Row: {
+          id: string;
+          profile_id: string;
+          type: string;
+          title: string;
+          body: string;
+          read: boolean;
+          data: Record<string, unknown> | null;
+          created_at: string;
+          read_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          type: string;
+          title: string;
+          body: string;
+          read?: boolean;
+          data?: Record<string, unknown> | null;
+          created_at?: string;
+          read_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          type?: string;
+          title?: string;
+          body?: string;
+          read?: boolean;
+          data?: Record<string, unknown> | null;
+          created_at?: string;
+          read_at?: string | null;
+        };
+      };
+      notification_preferences: {
+        Row: {
+          id: string;
+          profile_id: string;
+          notification_type: string;
+          enabled: boolean;
+        };
+        Insert: {
+          id?: string;
+          profile_id: string;
+          notification_type: string;
+          enabled?: boolean;
+        };
+        Update: {
+          id?: string;
+          profile_id?: string;
+          notification_type?: string;
+          enabled?: boolean;
+        };
+      };
       site_settings: {
         Row: {
           key: string;
@@ -386,3 +450,9 @@ export type LessonBookmark = Database['public']['Tables']['lesson_bookmarks']['R
 export type Certificate = Database['public']['Tables']['certificates']['Row'];
 export type CertificateInsert = Database['public']['Tables']['certificates']['Insert'];
 export type CertificateUpdate = Database['public']['Tables']['certificates']['Update'];
+export type Notification = Database['public']['Tables']['notifications']['Row'];
+export type NotificationInsert = Database['public']['Tables']['notifications']['Insert'];
+export type NotificationUpdate = Database['public']['Tables']['notifications']['Update'];
+export type NotificationPreference = Database['public']['Tables']['notification_preferences']['Row'];
+export type NotificationPreferenceInsert = Database['public']['Tables']['notification_preferences']['Insert'];
+export type NotificationPreferenceUpdate = Database['public']['Tables']['notification_preferences']['Update'];
