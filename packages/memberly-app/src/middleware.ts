@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PUBLIC_ROUTES = ['/login', '/forgot-password', '/api/webhooks', '/certificates'];
+const PUBLIC_ROUTES = ['/login', '/forgot-password', '/auth/callback', '/api/webhooks', '/certificates'];
 
 export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -34,11 +34,6 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-
-  // Root URL → always redirect to login
-  if (path === '/') {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
 
   // Public routes — no auth required
   if (PUBLIC_ROUTES.some((route) => path.startsWith(route))) {
