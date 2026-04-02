@@ -1,9 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createHmac } from 'crypto';
 
 // === Mocks ===
 
-const WEBHOOK_SECRET = 'test-webhook-secret';
+const INTEGRATION_KEY = 'test-integration-key';
 
 // Track all DB operations for assertions
 const dbState: {
@@ -34,7 +33,7 @@ function resetDbState() {
   dbState.products = [
     {
       id: 'internal-product-uuid',
-      title: 'Curso de Nutrição',
+      title: 'Curso de Nutricao',
       slug: 'curso-nutricao',
       is_published: true,
     },
@@ -144,6 +143,16 @@ function createMockAdminClient() {
           });
           return { data: { user: { id } }, error: null };
         },
+        createUser: (opts: { email: string; password: string; email_confirm: boolean; user_metadata: Record<string, unknown> }) => {
+          const id = `new-user-${Date.now()}`;
+          dbState.profiles.push({
+            id,
+            email: opts.email,
+            full_name: opts.user_metadata.full_name,
+            role: opts.user_metadata.role,
+          });
+          return { data: { user: { id } }, error: null };
+        },
       },
     },
   };
@@ -154,36 +163,55 @@ vi.mock('@/lib/supabase/admin', () => ({
 }));
 
 vi.mock('@/lib/webhooks/payt-signature', () => ({
-  validatePaytSignature: (sig: string | null, body: string, secret: string) => {
-    if (!sig) return false;
-    const expected = createHmac('sha256', secret).update(body).digest('hex');
-    return sig === expected;
+  validatePaytIntegrationKey: (receivedKey: string | undefined, expectedKey: string) => {
+    if (!receivedKey || !expectedKey) return false;
+    return receivedKey === expectedKey;
   },
 }));
 
 // Set env before importing route
-process.env.PAYT_WEBHOOK_SECRET = WEBHOOK_SECRET;
+process.env.PAYT_INTEGRATION_KEY = INTEGRATION_KEY;
 
 // Import the route handler
 const { POST } = await import('@/app/api/webhooks/payt/route');
 
-function signPayload(payload: Record<string, unknown>): string {
-  const body = JSON.stringify(payload);
-  return createHmac('sha256', WEBHOOK_SECRET).update(body).digest('hex');
+function createPaytPayload(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    integration_key: INTEGRATION_KEY,
+    transaction_id: 'tx-001',
+    seller_id: 'seller-1',
+    test: false,
+    type: 'order',
+    status: 'paid',
+    tangible: false,
+    customer: {
+      name: 'Joao Novo',
+      email: 'novo@teste.com',
+      fake_email: false,
+      doc: '12345678900',
+      phone: '11999999999',
+    },
+    product: {
+      name: 'Curso de Marketing',
+      price: 9900,
+      code: 'payt-prod-123',
+      type: 'digital',
+    },
+    transaction: {
+      payment_method: 'credit_card',
+      payment_status: 'paid',
+      total_price: 9900,
+    },
+    ...overrides,
+  };
 }
 
-function createWebhookRequest(
-  payload: Record<string, unknown>,
-  signature?: string
-): Request {
-  const body = JSON.stringify(payload);
-  const sig = signature ?? signPayload(payload);
+function createWebhookRequest(payload: Record<string, unknown>): Request {
   return new Request('http://localhost:3000/api/webhooks/payt', {
     method: 'POST',
-    body,
+    body: JSON.stringify(payload),
     headers: {
       'Content-Type': 'application/json',
-      'x-payt-signature': sig,
     },
   });
 }
@@ -196,13 +224,7 @@ describe('Webhook to Access E2E Flow', () => {
   });
 
   it('Scenario 1: New member purchases — creates user + access', async () => {
-    const payload = {
-      email: 'novo@teste.com',
-      product_id: 'payt-prod-123',
-      transaction_id: 'tx-001',
-      status: 'approved',
-      customer_name: 'João Novo',
-    };
+    const payload = createPaytPayload();
 
     const response = await POST(createWebhookRequest(payload) as never);
     const json = await response.json();
@@ -214,7 +236,7 @@ describe('Webhook to Access E2E Flow', () => {
     // Verify member was created
     const member = dbState.profiles.find((p) => p.email === 'novo@teste.com');
     expect(member).toBeDefined();
-    expect(member?.full_name).toBe('João Novo');
+    expect(member?.full_name).toBe('Joao Novo');
 
     // Verify access was granted
     const access = dbState.member_access.find(
@@ -237,13 +259,16 @@ describe('Webhook to Access E2E Flow', () => {
       role: 'member',
     });
 
-    const payload = {
-      email: 'existente@teste.com',
-      product_id: 'payt-prod-123',
+    const payload = createPaytPayload({
       transaction_id: 'tx-002',
-      status: 'paid',
-      customer_name: 'Maria Existente',
-    };
+      customer: {
+        name: 'Maria Existente',
+        email: 'existente@teste.com',
+        fake_email: false,
+        doc: '98765432100',
+        phone: '11888888888',
+      },
+    });
 
     const response = await POST(createWebhookRequest(payload) as never);
     const json = await response.json();
@@ -258,7 +283,7 @@ describe('Webhook to Access E2E Flow', () => {
     );
     expect(access).toBeDefined();
 
-    // No new profile was created (still only 1 profile in state)
+    // No new profile was created
     const profiles = dbState.profiles.filter(
       (p) => p.email === 'existente@teste.com'
     );
@@ -266,12 +291,7 @@ describe('Webhook to Access E2E Flow', () => {
   });
 
   it('Scenario 3: Duplicate webhook — idempotent (no duplicate access)', async () => {
-    const payload = {
-      email: 'novo@teste.com',
-      product_id: 'payt-prod-123',
-      transaction_id: 'tx-003',
-      status: 'approved',
-    };
+    const payload = createPaytPayload({ transaction_id: 'tx-003' });
 
     // First call — creates access
     const response1 = await POST(createWebhookRequest(payload) as never);
@@ -279,8 +299,7 @@ describe('Webhook to Access E2E Flow', () => {
     expect(json1.status).toBe('processed');
 
     // Simulate the transaction_id already existing for idempotency check
-    dbState.member_access[dbState.member_access.length - 1].transaction_id =
-      'tx-003';
+    dbState.member_access[dbState.member_access.length - 1].transaction_id = 'tx-003';
 
     // Second call — should be idempotent
     const response2 = await POST(createWebhookRequest(payload) as never);
@@ -289,12 +308,15 @@ describe('Webhook to Access E2E Flow', () => {
   });
 
   it('Scenario 4: Unknown product mapping — returns ignored with 200', async () => {
-    const payload = {
-      email: 'comprador@teste.com',
-      product_id: 'unknown-payt-product',
+    const payload = createPaytPayload({
       transaction_id: 'tx-004',
-      status: 'approved',
-    };
+      product: {
+        name: 'Produto Desconhecido',
+        price: 0,
+        code: 'unknown-payt-product',
+        type: 'digital',
+      },
+    });
 
     const response = await POST(createWebhookRequest(payload) as never);
     const json = await response.json();
@@ -308,12 +330,20 @@ describe('Webhook to Access E2E Flow', () => {
   });
 
   it('Scenario 5: Non-approved status — ignored with 200', async () => {
-    const payload = {
-      email: 'pending@teste.com',
-      product_id: 'payt-prod-123',
+    const payload = createPaytPayload({
       transaction_id: 'tx-005',
-      status: 'pending',
-    };
+      status: 'waiting_payment',
+      customer: {
+        name: 'Pending User',
+        email: 'pending@teste.com',
+        fake_email: false,
+      },
+      transaction: {
+        payment_method: 'pix',
+        payment_status: 'waiting_payment',
+        total_price: 9900,
+      },
+    });
 
     const response = await POST(createWebhookRequest(payload) as never);
     const json = await response.json();
@@ -323,17 +353,18 @@ describe('Webhook to Access E2E Flow', () => {
     expect(json.reason).toBe('status_not_approved');
   });
 
-  it('Scenario 6: Invalid signature — returns 401', async () => {
-    const payload = {
-      email: 'hack@teste.com',
-      product_id: 'payt-prod-123',
+  it('Scenario 6: Invalid integration key — returns 401', async () => {
+    const payload = createPaytPayload({
       transaction_id: 'tx-006',
-      status: 'approved',
-    };
+      integration_key: 'invalid-key',
+      customer: {
+        name: 'Hacker',
+        email: 'hack@teste.com',
+        fake_email: false,
+      },
+    });
 
-    const response = await POST(
-      createWebhookRequest(payload, 'invalid-signature') as never
-    );
+    const response = await POST(createWebhookRequest(payload) as never);
     const json = await response.json();
 
     expect(response.status).toBe(401);
@@ -341,12 +372,14 @@ describe('Webhook to Access E2E Flow', () => {
   });
 
   it('returns duration_ms in successful response', async () => {
-    const payload = {
-      email: 'timing@teste.com',
-      product_id: 'payt-prod-123',
+    const payload = createPaytPayload({
       transaction_id: 'tx-007',
-      status: 'approved',
-    };
+      customer: {
+        name: 'Timing User',
+        email: 'timing@teste.com',
+        fake_email: false,
+      },
+    });
 
     const response = await POST(createWebhookRequest(payload) as never);
     const json = await response.json();

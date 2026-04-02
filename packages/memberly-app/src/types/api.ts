@@ -92,6 +92,7 @@ export interface MemberWithAccessCount {
   id: string;
   full_name: string;
   avatar_url: string | null;
+  phone: string | null;
   role: 'member' | 'admin';
   created_at: string;
   updated_at: string;

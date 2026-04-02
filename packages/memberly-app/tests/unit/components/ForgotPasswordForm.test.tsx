@@ -1,61 +1,25 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import ForgotPasswordPage from '@/app/(auth)/forgot-password/page';
+import { describe, it, expect, vi } from 'vitest';
 
-const mockResetPasswordForEmail = vi.fn();
+// ForgotPasswordPage now redirects to /login (server-side redirect)
+// Testing the redirect behavior requires a different approach
 
-vi.mock('@/lib/supabase/client', () => ({
-  createClient: () => ({
-    auth: {
-      resetPasswordForEmail: mockResetPasswordForEmail,
-    },
-  }),
+vi.mock('next/navigation', () => ({
+  redirect: vi.fn(),
 }));
 
 describe('ForgotPasswordPage', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  it('redirects to /login', async () => {
+    const { redirect } = await import('next/navigation');
 
-  it('renders forgot password form with email and submit button', () => {
-    render(<ForgotPasswordPage />);
+    try {
+      const { default: ForgotPasswordPage } = await import(
+        '@/app/(auth)/forgot-password/page'
+      );
+      ForgotPasswordPage();
+    } catch {
+      // redirect throws in Next.js
+    }
 
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /enviar link/i })).toBeInTheDocument();
-  });
-
-  it('renders back to login link', () => {
-    render(<ForgotPasswordPage />);
-
-    const link = screen.getByText(/voltar ao login/i);
-    expect(link).toHaveAttribute('href', '/login');
-  });
-
-  it('shows success message after submit', async () => {
-    mockResetPasswordForEmail.mockResolvedValue({ error: null });
-
-    render(<ForgotPasswordPage />);
-
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@test.com' } });
-    fireEvent.click(screen.getByRole('button', { name: /enviar link/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/se o email estiver cadastrado/i)).toBeInTheDocument();
-    });
-  });
-
-  it('shows error on API failure', async () => {
-    mockResetPasswordForEmail.mockResolvedValue({
-      error: { message: 'Rate limit exceeded' },
-    });
-
-    render(<ForgotPasswordPage />);
-
-    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@test.com' } });
-    fireEvent.click(screen.getByRole('button', { name: /enviar link/i }));
-
-    await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent(/erro ao enviar email/i);
-    });
+    expect(redirect).toHaveBeenCalledWith('/login');
   });
 });

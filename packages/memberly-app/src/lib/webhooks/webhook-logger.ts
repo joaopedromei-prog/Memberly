@@ -28,13 +28,18 @@ export async function updateWebhookLog(
   adminClient: SupabaseClient,
   logId: string,
   status: 'processed' | 'failed' | 'ignored',
-  errorMessage?: string
+  errorMessage?: string,
+  emailResult?: { sent: boolean; error?: string }
 ): Promise<void> {
   const { error } = await adminClient
     .from('webhook_logs')
     .update({
       status,
       ...(errorMessage && { error_message: errorMessage }),
+      ...(emailResult && {
+        email_sent: emailResult.sent,
+        email_error: emailResult.error || null,
+      }),
     })
     .eq('id', logId);
 

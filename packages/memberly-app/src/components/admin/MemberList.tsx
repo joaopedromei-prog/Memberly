@@ -207,6 +207,7 @@ export function MemberList({
                 </th>
                 <th className="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Membro</th>
                 <th className="hidden lg:table-cell py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
+                <th className="hidden lg:table-cell py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Telefone</th>
                 <th className="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Produtos</th>
                 <th className="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Registrado em</th>
                 <th className="py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider w-24">Ações</th>
@@ -215,7 +216,7 @@ export function MemberList({
             <tbody>
               {members.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500 text-sm">
+                  <td colSpan={7} className="py-12 text-center text-slate-500 text-sm">
                     Nenhum membro encontrado.
                   </td>
                 </tr>
@@ -257,6 +258,9 @@ export function MemberList({
                       </td>
                       <td className="hidden lg:table-cell py-3 px-4 text-sm text-slate-500">
                         {member.full_name ? `${member.full_name.toLowerCase().replace(/\s+/g, '.')}@email.com` : '—'}
+                      </td>
+                      <td className="hidden lg:table-cell py-3 px-4 text-sm text-slate-500">
+                        {member.phone || '—'}
                       </td>
                       <td className="py-3 px-4">
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">

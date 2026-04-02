@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createHmac } from 'crypto';
 
-const WEBHOOK_SECRET = 'test-webhook-secret';
+const INTEGRATION_KEY = 'test-integration-key';
 
 // Mock external dependencies
 const mockListUsers = vi.fn();
@@ -34,6 +33,11 @@ vi.mock('@/lib/webhooks/member-provisioning', () => ({
   findOrCreateMember: (...args: unknown[]) => mockFindOrCreateMember(...args),
 }));
 
+// Mock email
+vi.mock('@/lib/email/templates/welcome-email', () => ({
+  sendWelcomeEmail: vi.fn().mockResolvedValue({ sent: false, skipped: true }),
+}));
+
 // Mock webhook logger
 const mockCreateWebhookLog = vi.fn();
 const mockUpdateWebhookLog = vi.fn();
@@ -42,43 +46,49 @@ vi.mock('@/lib/webhooks/webhook-logger', () => ({
   updateWebhookLog: (...args: unknown[]) => mockUpdateWebhookLog(...args),
 }));
 
-function signPayload(payload: string): string {
-  return createHmac('sha256', WEBHOOK_SECRET).update(payload).digest('hex');
+function createPaytPayload(overrides: Record<string, unknown> = {}) {
+  return {
+    integration_key: INTEGRATION_KEY,
+    transaction_id: 'txn-001',
+    seller_id: 'seller-1',
+    test: false,
+    type: 'order',
+    status: 'paid',
+    tangible: false,
+    customer: {
+      name: 'John Doe',
+      email: 'buyer@example.com',
+      fake_email: false,
+      doc: '12345678900',
+      phone: '11999999999',
+    },
+    product: {
+      name: 'Curso de Marketing',
+      price: 9900,
+      code: 'ext-prod-1',
+      type: 'digital',
+    },
+    transaction: {
+      payment_method: 'credit_card',
+      payment_status: 'paid',
+      total_price: 9900,
+    },
+    ...overrides,
+  };
 }
 
-function createWebhookRequest(
-  body: Record<string, unknown>,
-  options: { signature?: string | null; includeSignature?: boolean } = {}
-) {
-  const rawBody = JSON.stringify(body);
-  const headers: Record<string, string> = {
-    'content-type': 'application/json',
-  };
-
-  if (options.includeSignature !== false) {
-    const sig = options.signature ?? signPayload(rawBody);
-    headers['x-payt-signature'] = sig;
-  }
-
+function createWebhookRequest(payload: Record<string, unknown>) {
   return new Request('http://localhost/api/webhooks/payt', {
     method: 'POST',
-    headers,
-    body: rawBody,
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload),
   });
 }
-
-const validPayload = {
-  email: 'buyer@example.com',
-  product_id: 'ext-prod-1',
-  transaction_id: 'txn-001',
-  status: 'approved',
-  customer_name: 'John Doe',
-};
 
 describe('Payt Webhook', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv('PAYT_WEBHOOK_SECRET', WEBHOOK_SECRET);
+    vi.stubEnv('PAYT_INTEGRATION_KEY', INTEGRATION_KEY);
 
     // Default happy path mocks
     mockCreateWebhookLog.mockResolvedValue('log-1');
@@ -105,10 +115,10 @@ describe('Payt Webhook', () => {
     });
   });
 
-  it('should process a new purchase with new member', async () => {
+  it('should process a new purchase with Payt V1 payload', async () => {
     const { POST } = await import('@/app/api/webhooks/payt/route');
 
-    const request = createWebhookRequest(validPayload);
+    const request = createWebhookRequest(createPaytPayload());
     const response = await POST(request as never);
     const data = await response.json();
 
@@ -117,14 +127,16 @@ describe('Payt Webhook', () => {
     expect(mockFindOrCreateMember).toHaveBeenCalledWith(
       mockAdminClient,
       'buyer@example.com',
-      'John Doe'
+      'John Doe',
+      '11999999999'
+    );
+    expect(mockLookupInternalProduct).toHaveBeenCalledWith(
+      mockAdminClient,
+      'ext-prod-1',
+      'payt',
+      'log-1'
     );
     expect(mockCreateWebhookLog).toHaveBeenCalled();
-    expect(mockUpdateWebhookLog).toHaveBeenCalledWith(
-      mockAdminClient,
-      'log-1',
-      'processed'
-    );
   });
 
   it('should process purchase for existing member', async () => {
@@ -132,7 +144,7 @@ describe('Payt Webhook', () => {
 
     const { POST } = await import('@/app/api/webhooks/payt/route');
 
-    const payload = { ...validPayload, status: 'paid', transaction_id: 'txn-002' };
+    const payload = createPaytPayload({ transaction_id: 'txn-002' });
     const request = createWebhookRequest(payload);
     const response = await POST(request as never);
     const data = await response.json();
@@ -160,7 +172,7 @@ describe('Payt Webhook', () => {
 
     const { POST } = await import('@/app/api/webhooks/payt/route');
 
-    const payload = { ...validPayload, transaction_id: 'txn-duplicate' };
+    const payload = createPaytPayload({ transaction_id: 'txn-duplicate' });
     const request = createWebhookRequest(payload);
     const response = await POST(request as never);
     const data = await response.json();
@@ -170,23 +182,25 @@ describe('Payt Webhook', () => {
     expect(mockFindOrCreateMember).not.toHaveBeenCalled();
   });
 
-  it('should return 401 for invalid signature', async () => {
+  it('should return 401 for invalid integration key', async () => {
     const { POST } = await import('@/app/api/webhooks/payt/route');
 
-    const request = createWebhookRequest(validPayload, { signature: 'invalid-signature' });
+    const payload = createPaytPayload({ integration_key: 'wrong-key' });
+    const request = createWebhookRequest(payload);
     const response = await POST(request as never);
 
     expect(response.status).toBe(401);
     expect(mockCreateWebhookLog).not.toHaveBeenCalled();
   });
 
-  it('should return 401 for missing signature', async () => {
+  it('should return 400 for missing integration key', async () => {
     const { POST } = await import('@/app/api/webhooks/payt/route');
 
-    const request = createWebhookRequest(validPayload, { includeSignature: false });
+    const payload = { invalid: 'data' };
+    const request = createWebhookRequest(payload);
     const response = await POST(request as never);
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(400);
   });
 
   it('should return 200 with ignored status when no product mapping exists', async () => {
@@ -194,7 +208,9 @@ describe('Payt Webhook', () => {
 
     const { POST } = await import('@/app/api/webhooks/payt/route');
 
-    const payload = { ...validPayload, product_id: 'unknown-ext-prod' };
+    const payload = createPaytPayload({
+      product: { name: 'Unknown', price: 0, code: 'unknown-ext-prod', type: 'digital' },
+    });
     const request = createWebhookRequest(payload);
     const response = await POST(request as never);
     const data = await response.json();
@@ -204,13 +220,23 @@ describe('Payt Webhook', () => {
     expect(data.reason).toBe('no_product_mapping');
   });
 
-  it('should return 400 for invalid payload', async () => {
+  it('should ignore non-paid status with 200', async () => {
     const { POST } = await import('@/app/api/webhooks/payt/route');
 
-    const invalidPayload = { invalid: 'data' };
-    const request = createWebhookRequest(invalidPayload);
+    const payload = createPaytPayload({
+      status: 'waiting_payment',
+      transaction: {
+        payment_method: 'pix',
+        payment_status: 'waiting_payment',
+        total_price: 9900,
+      },
+    });
+    const request = createWebhookRequest(payload);
     const response = await POST(request as never);
+    const data = await response.json();
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(200);
+    expect(data.status).toBe('ignored');
+    expect(data.reason).toBe('status_not_approved');
   });
 });

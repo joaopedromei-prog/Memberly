@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { validatePaytSignature } from '@/lib/webhooks/payt-signature';
+import { validatePaytIntegrationKey } from '@/lib/webhooks/payt-signature';
 import { paytWebhookSchema } from '@/types/webhook';
 import { findOrCreateMember } from '@/lib/webhooks/member-provisioning';
 import { createWebhookLog, updateWebhookLog } from '@/lib/webhooks/webhook-logger';
 import { lookupInternalProduct } from '@/lib/webhooks/product-lookup';
+import { sendWelcomeEmail } from '@/lib/email/templates/welcome-email';
 import { apiError } from '@/lib/utils/api-response';
 import { webhookLimiter } from '@/lib/utils/rate-limiter';
 
@@ -35,30 +36,15 @@ export async function POST(request: NextRequest) {
   let logId: string | null = null;
 
   try {
-    // 1. Read raw body for signature validation
-    const rawBody = await request.text();
-
-    // 2. Validate signature
-    const signature = request.headers.get('x-payt-signature');
-    const secret = process.env.PAYT_WEBHOOK_SECRET;
-
-    if (!secret) {
-      console.error('PAYT_WEBHOOK_SECRET not configured');
-      return apiError('SERVER_ERROR', 'Webhook secret not configured', 500);
-    }
-
-    if (!validatePaytSignature(signature, rawBody, secret)) {
-      return apiError('UNAUTHORIZED', 'Invalid webhook signature', 401);
-    }
-
-    // 3. Parse and validate payload
+    // 1. Parse JSON body
     let body: unknown;
     try {
-      body = JSON.parse(rawBody);
+      body = await request.json();
     } catch {
       return apiError('VALIDATION_ERROR', 'Invalid JSON payload', 400);
     }
 
+    // 2. Validate payload against Payt V1 schema
     const parsed = paytWebhookSchema.safeParse(body);
     if (!parsed.success) {
       return apiError('VALIDATION_ERROR', 'Invalid webhook payload', 400, {
@@ -68,16 +54,38 @@ export async function POST(request: NextRequest) {
 
     const payload = parsed.data;
 
+    // 3. Validate integration key
+    const expectedKey = process.env.PAYT_INTEGRATION_KEY;
+
+    if (!expectedKey) {
+      console.error('PAYT_INTEGRATION_KEY not configured');
+      return apiError('SERVER_ERROR', 'Webhook integration key not configured', 500);
+    }
+
+    if (!validatePaytIntegrationKey(payload.integration_key, expectedKey)) {
+      return apiError('UNAUTHORIZED', 'Invalid integration key', 401);
+    }
+
     // 4. Log webhook (before processing)
     logId = await createWebhookLog(adminClient, body as Record<string, unknown>, 'purchase');
 
-    // 5. Only process approved/paid purchases
-    if (payload.status !== 'approved' && payload.status !== 'paid') {
+    // 5. Ignore test postbacks in production
+    if (payload.test && process.env.NODE_ENV === 'production') {
+      await updateWebhookLog(adminClient, logId, 'ignored', 'Test postback ignored in production');
+      return NextResponse.json({ status: 'ignored', reason: 'test_postback' });
+    }
+
+    // 6. Only process paid/approved purchases
+    const isPaid = payload.status === 'paid' ||
+      payload.status === 'approved' ||
+      payload.transaction?.payment_status === 'paid';
+
+    if (!isPaid) {
       await updateWebhookLog(adminClient, logId, 'ignored');
       return NextResponse.json({ status: 'ignored', reason: 'status_not_approved' });
     }
 
-    // 6. Check idempotency via transaction_id
+    // 7. Check idempotency via transaction_id
     const { data: existingAccess } = await adminClient
       .from('member_access')
       .select('id')
@@ -89,10 +97,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: 'already_processed' });
     }
 
-    // 7. Lookup product mapping (external_product_id → internal product_id)
+    // 8. Lookup product mapping (product.code → internal product_id)
     const internalProductId = await lookupInternalProduct(
       adminClient,
-      payload.product_id,
+      payload.product.code,
       'payt',
       logId
     );
@@ -101,10 +109,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: 'ignored', reason: 'no_product_mapping' });
     }
 
-    // 8. Find or create member
-    const profileId = await findOrCreateMember(adminClient, payload.email, payload.customer_name);
+    // 9. Find or create member (with phone from checkout)
+    const profileId = await findOrCreateMember(
+      adminClient,
+      payload.customer.email,
+      payload.customer.name,
+      payload.customer.phone
+    );
 
-    // 9. Create member access
+    // 10. Create member access
     const { error: accessError } = await adminClient
       .from('member_access')
       .insert({
@@ -123,11 +136,32 @@ export async function POST(request: NextRequest) {
       throw accessError;
     }
 
-    // 10. Mark log as processed
-    const durationMs = Math.round(performance.now() - startTime);
-    await updateWebhookLog(adminClient, logId, 'processed');
+    // 11. Send welcome email (best-effort, does not block response)
+    let emailResult: { sent: boolean; error?: string } = { sent: false };
+    try {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const productName = payload.product.name || 'seu produto';
+      const memberName = payload.customer.name || payload.customer.email.split('@')[0];
 
-    console.info(`[webhook/payt] Processed in ${durationMs}ms — profile=${profileId} product=${internalProductId}`);
+      emailResult = await sendWelcomeEmail({
+        memberName,
+        memberEmail: payload.customer.email,
+        productName,
+        loginUrl: `${appUrl}/login`,
+      });
+    } catch (emailErr) {
+      emailResult = {
+        sent: false,
+        error: emailErr instanceof Error ? emailErr.message : 'Email send exception',
+      };
+      console.error('[webhook/payt] Email send error (non-blocking):', emailErr);
+    }
+
+    // 12. Mark log as processed with email tracking
+    const durationMs = Math.round(performance.now() - startTime);
+    await updateWebhookLog(adminClient, logId, 'processed', undefined, emailResult);
+
+    console.info(`[webhook/payt] Processed in ${durationMs}ms — profile=${profileId} product=${internalProductId} email=${emailResult.sent}`);
 
     return NextResponse.json({ status: 'processed', profile_id: profileId, duration_ms: durationMs });
   } catch (error) {

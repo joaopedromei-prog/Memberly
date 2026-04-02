@@ -4,7 +4,8 @@ import { DEFAULT_MEMBER_PASSWORD } from '@/lib/constants/auth';
 export async function findOrCreateMember(
   adminClient: SupabaseClient,
   email: string,
-  customerName?: string
+  customerName?: string,
+  customerPhone?: string
 ): Promise<string> {
   // Try to find existing user by email using filtered query
   const { data: existingUsers, error: listError } =
@@ -22,6 +23,22 @@ export async function findOrCreateMember(
   );
 
   if (existingUser) {
+    // Update phone if provided and profile doesn't have one yet
+    if (customerPhone) {
+      const { data: profile } = await adminClient
+        .from('profiles')
+        .select('phone')
+        .eq('id', existingUser.id)
+        .single();
+
+      if (profile && !profile.phone) {
+        await adminClient
+          .from('profiles')
+          .update({ phone: customerPhone })
+          .eq('id', existingUser.id);
+      }
+    }
+
     return existingUser.id;
   }
 
@@ -34,6 +51,7 @@ export async function findOrCreateMember(
       user_metadata: {
         role: 'member',
         full_name: customerName || email.split('@')[0],
+        phone: customerPhone || null,
       },
     });
 
@@ -41,6 +59,13 @@ export async function findOrCreateMember(
     throw new Error(`Failed to create user: ${createError.message}`);
   }
 
-  // The handle_new_user() trigger creates the profile automatically
+  // Update phone in profile (trigger creates profile, then we set phone)
+  if (customerPhone) {
+    await adminClient
+      .from('profiles')
+      .update({ phone: customerPhone })
+      .eq('id', newUser.user.id);
+  }
+
   return newUser.user.id;
 }
